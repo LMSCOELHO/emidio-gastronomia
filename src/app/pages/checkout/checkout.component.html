@@ -126,13 +126,11 @@
           </div>
         </div>
 
-        @if (pagamentoSelecionado === 'PIX') {
-          <div class="pix-box">
-            <strong>❖ Pagamento via PIX</strong>
-            <p>Após confirmar o pedido, será exibido um QR Code para pagamento. O pedido será aprovado automaticamente após a confirmação.</p>
-            <strong>⚡ Aprovação imediata</strong>
-          </div>
-        }
+        <div class="pix-box" *ngIf="pagamentoSelecionado === 'PIX'">
+          <strong>❖ Pagamento via PIX</strong>
+          <p>Após confirmar o pedido, será exibido um QR Code para pagamento. O pedido será aprovado automaticamente após a confirmação.</p>
+          <strong>⚡ Aprovação imediata</strong>
+        </div>
       </section>
 
     </main>

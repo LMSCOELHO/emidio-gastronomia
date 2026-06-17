@@ -30,7 +30,7 @@
 
       <button type="button" (click)="cadastrar()">CADASTRAR</button>
 
-      @if (erro) { <div class="erro">{{ erro }}</div> }
+      <div class="erro" *ngIf="erro">{{ erro }}</div>
     </div>
 
     <div class="links">

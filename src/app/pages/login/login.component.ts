@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -5,7 +6,7 @@ import { Router, RouterModule } from '@angular/router';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
@@ -16,44 +17,60 @@ export class LoginComponent {
 
   constructor(private router: Router) {}
 
-  fazerLogin() {
+  fazerLogin(): void {
     const emailLower = this.email.trim().toLowerCase();
     const senhaDigitada = this.senha.trim();
 
     this.erro = '';
 
-    login() {
-  if (this.email === 'adm@email.com' && this.senha === '123456') {
-    localStorage.setItem('usuarioLogado', JSON.stringify({
-      nome: 'Administrador',
-      email: this.email,
-      tipo: 'admin'
-    }));
+    // LOGIN DO ADM
+    if (
+      (emailLower === 'adm@gmail.com' || emailLower === 'adm@email.com') &&
+      senhaDigitada === '123456'
+    ) {
+      alert('Bem-vindo ADM!');
 
-    this.router.navigate(['/painel-adm']);
-    return;
-  }
+      localStorage.setItem('tipoUsuario', 'admin');
+      localStorage.setItem('usuarioLogado', JSON.stringify({
+        nome: 'Administrador',
+        email: emailLower,
+        tipo: 'admin'
+      }));
 
-  const usuarios = JSON.parse(localStorage.getItem('usuarios') || '[]');
-
-  const usuarioEncontrado = usuarios.find((u: any) =>
-    u.email === this.email && u.senha === this.senha
-  );
-
-  if (!usuarioEncontrado) {
-    alert('Usuário não cadastrado!');
-    return;
-  }
-
-  localStorage.setItem('usuarioLogado', JSON.stringify(usuarioEncontrado));
-  this.router.navigate(['/inicio']);
-}
+      this.router.navigate(['/painel-adm']);
+      return;
+    }
 
     // LOGIN DA COZINHA
-    if (emailLower === 'cozinha@gmail.com' && senhaDigitada === '123456') {
+    if (
+      (emailLower === 'cozinha@gmail.com' || emailLower === 'cozinhaadmin@gmail.com') &&
+      senhaDigitada === '123456'
+    ) {
       alert('Bem-vindo Cozinha!');
+
       localStorage.setItem('tipoUsuario', 'cozinha');
+      localStorage.setItem('usuarioLogado', JSON.stringify({
+        nome: 'Cozinha',
+        email: emailLower,
+        tipo: 'cozinha'
+      }));
+
       this.router.navigate(['/painel-cozinha']);
+      return;
+    }
+
+    // LOGIN DO MOTOBOY
+    if (emailLower === 'motoboy@gmail.com' && senhaDigitada === '123456') {
+      alert('Bem-vindo Motoboy!');
+
+      localStorage.setItem('tipoUsuario', 'motoboy');
+      localStorage.setItem('usuarioLogado', JSON.stringify({
+        nome: 'Motoboy',
+        email: emailLower,
+        tipo: 'motoboy'
+      }));
+
+      this.router.navigate(['/painel-motoboy']);
       return;
     }
 
@@ -67,7 +84,7 @@ export class LoginComponent {
 
     if (usuario) {
       localStorage.setItem('tipoUsuario', 'cliente');
-      localStorage.setItem('usuarioLogado', emailLower);
+      localStorage.setItem('usuarioLogado', JSON.stringify(usuario));
 
       const pedidosClientes: any = JSON.parse(localStorage.getItem('pedidosClientes') || '{}');
       const totalPedidos = pedidosClientes[emailLower] || 0;
@@ -87,7 +104,12 @@ export class LoginComponent {
     alert('Usuário não cadastrado!');
   }
 
-  recuperarSenha() {
+  // Deixei esse também caso seu HTML esteja chamando login()
+  login(): void {
+    this.fazerLogin();
+  }
+
+  recuperarSenha(): void {
     const emailDigitado = prompt('Digite o e-mail cadastrado:');
 
     if (!emailDigitado) return;
@@ -106,7 +128,7 @@ export class LoginComponent {
     }
   }
 
-  voltar() {
+  voltar(): void {
     this.router.navigate(['/inicio']);
   }
 }

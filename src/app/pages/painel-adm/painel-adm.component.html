@@ -32,7 +32,7 @@
   </div>
 
   <!-- DASHBOARD -->
-  @if (activeSection === 'dashboard') {
+  <ng-container *ngIf="activeSection === 'dashboard'">
     <div class="grid grid4">
       <div class="card"><div class="cardIcon"><i class="fa-solid fa-bag-shopping"></i></div><small>Pedidos Ativos</small><h2>{{ activeOrders }}</h2><small>Em preparação ou entrega</small></div>
       <div class="card"><div class="cardIcon"><i class="fa-solid fa-dollar-sign"></i></div><small>Receita do Dia</small><h2 class="yellow">{{ dayRevenue }}</h2><small>Vendas finalizadas</small></div>
@@ -43,7 +43,7 @@
     <div class="panel">
       <h3><i class="fa-regular fa-clock yellow"></i> Pedidos Recentes</h3>
       <div class="orderCards">
-        @for (o of state.orders; track o.id) {
+        <ng-container *ngFor="let o of state.orders">
           <div class="orderCard">
             <h4>#-{{ o.id }} {{ o.client }}</h4>
             <p class="yellow">{{ o.dish }}</p>
@@ -52,13 +52,12 @@
             <span class="badge" [ngClass]="orderBadgeClass(o.status)">{{ o.status }}</span>
             <h3>{{ money(o.price) }}</h3>
           </div>
-        }
+        </ng-container>
       </div>
     </div>
-  }
+    </ng-container>
 
-  <!-- OLHO DO DONO -->
-  @if (activeSection === 'owner') {
+  <!-- CARDÁPIO -->
     <div class="tabs">
       <button [class.active]="activeOwnerTab==='visao'" (click)="setOwnerTab('visao')"><i class="fa-regular fa-eye"></i> Visão Geral</button>
       <button [class.active]="activeOwnerTab==='estoque'" (click)="setOwnerTab('estoque')"><i class="fa-solid fa-box"></i> Estoque</button>
@@ -70,12 +69,12 @@
       <button [class.active]="activeOwnerTab==='funcionarios'" (click)="setOwnerTab('funcionarios')"><i class="fa-solid fa-user-tie"></i> Funcionários</button>
     </div>
 
-    @if (activeOwnerTab === 'visao') {
+    <ng-container *ngIf="activeOwnerTab === 'visao'">
       <div class="dangerStrip">
         <b><i class="fa-solid fa-fire"></i> Itens críticos no estoque:</b>
-        @for (i of criticalItems; track i.name) {
+        <ng-container *ngFor="let i of criticalItems">
           <span>{{ i.name }} ({{ i.qty }} {{ i.unit }})</span>
-        }
+        </ng-container>
       </div>
       <div class="grid grid4">
         <div class="card"><span class="up">↑ 12%</span><div class="cardIcon"><i class="fa-solid fa-dollar-sign"></i></div><small>Lucro Líquido</small><h2>{{ money(77400) }}</h2><small>Receita - todos os custos</small></div>
@@ -88,9 +87,9 @@
         <div class="panel"><h3>Receita vs Custo vs Lucro</h3><div class="chartBox"><canvas id="lineChart"></canvas></div></div>
         <div class="panel"><h3>Distribuição de Custos</h3><div class="chartBox"><canvas id="pieChart"></canvas></div></div>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'estoque') {
+    <ng-container *ngIf="activeOwnerTab === 'estoque'">
       <div class="toolbar">
         <input class="search" [(ngModel)]="stockSearch" placeholder="Buscar item, categoria, fornecedor...">
         <button class="btn gold" (click)="modalVisible=true">+ Novo item</button>
@@ -106,57 +105,53 @@
         <table class="table">
           <thead><tr><th>Item</th><th>Categoria</th><th>Fornecedor</th><th>Estoque Atual</th><th>Mín/Máx</th><th>Custo</th><th>Valor Total</th><th>Status</th><th>Ações</th></tr></thead>
           <tbody>
-            @for (item of filteredStock; track item.name; let idx = $index) {
-              <tr>
-                <td><b>{{ item.name }}</b></td>
-                <td>{{ item.cat }}</td>
-                <td>{{ item.supplier }}</td>
-                <td><b>{{ item.qty }} {{ item.unit }}</b><div class="progress"><b [style.width.%]="stockProgress(item)"></b></div></td>
-                <td>{{ item.min }} / {{ item.min * 3 }}</td>
-                <td>{{ money(item.cost) }}</td>
-                <td class="yellow">{{ money(item.qty * item.cost) }}</td>
-                <td><span class="badge" [ngClass]="stockBadgeClass(item)">{{ stockStatus(item) }}</span></td>
-                <td><button class="btn" (click)="restock(state.stock.indexOf(item))">+</button> <button class="btn red" (click)="removeStock(state.stock.indexOf(item))">-</button></td>
-              </tr>
-            }
+            <tr *ngFor="let item of filteredStock; let idx = index">
+              <td><b>{{ item.name }}</b></td>
+              <td>{{ item.cat }}</td>
+              <td>{{ item.supplier }}</td>
+              <td><b>{{ item.qty }} {{ item.unit }}</b><div class="progress"><b [style.width.%]="stockProgress(item)"></b></div></td>
+              <td>{{ item.min }} / {{ item.min * 3 }}</td>
+              <td>{{ money(item.cost) }}</td>
+              <td class="yellow">{{ money(item.qty * item.cost) }}</td>
+              <td><span class="badge" [ngClass]="stockBadgeClass(item)">{{ stockStatus(item) }}</span></td>
+              <td><button class="btn" (click)="restock(state.stock.indexOf(item))">+</button> <button class="btn red" (click)="removeStock(state.stock.indexOf(item))">-</button></td>
+            </tr>
           </tbody>
         </table>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'compras') {
+    <ng-container *ngIf="activeOwnerTab === 'compras'">
       <div class="panel">
         <h3>Lista de Compras</h3>
-        @for (i of criticalItems; track i.name) {
+        <ng-container *ngFor="let i of criticalItems">
           <div class="card" style="margin-bottom:10px;min-height:80px">
             <h4 class="redText">{{ i.name }}</h4>
             <small>{{ i.supplier }}</small>
             <span style="float:right" class="redText">Atual: {{ i.qty }}{{ i.unit }} | Comprar: {{ i.min*2-i.qty > 1 ? i.min*2-i.qty : 1 }}</span>
           </div>
-        }
+        </ng-container>
         <button class="btn gold" (click)="buyCritical()">Marcar críticos como comprados</button>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'fornecedores') {
+    <ng-container *ngIf="activeOwnerTab === 'fornecedores'">
       <button class="btn gold" style="float:right">+ Novo Fornecedor</button>
       <h3>Fornecedores</h3><br>
       <div class="supplierGrid">
-        @for (s of suppliers; track s; let i = $index) {
-          <div class="supplier">
-            <span class="stars">★★★★★ <span class="badge ok">ativo</span></span>
-            <h4>{{ s }}</h4>
-            <p style="color:#8b95a5">Contato: {{ i % 2 ? 'João' : 'Carlos' }} • São Paulo, SP</p>
-            <br>
-            <button class="btn">Detalhes</button>
-            <button class="btn blue">Pedido</button>
-            <p class="yellow" style="float:right">Estoque: {{ money(1200 + i * 430) }}</p>
-          </div>
-        }
+        <div *ngFor="let s of suppliers; let i = index" class="supplier">
+          <span class="stars">★★★★★ <span class="badge ok">ativo</span></span>
+          <h4>{{ s }}</h4>
+          <p style="color:#8b95a5">Contato: {{ i % 2 ? 'João' : 'Carlos' }} • São Paulo, SP</p>
+          <br>
+          <button class="btn">Detalhes</button>
+          <button class="btn blue">Pedido</button>
+          <p class="yellow" style="float:right">Estoque: {{ money(1200 + i * 430) }}</p>
+        </div>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'financeiro') {
+    <ng-container *ngIf="activeOwnerTab === 'financeiro'">
       <div class="grid grid2">
         <div class="panel">
           <h3>Ponto de Equilíbrio</h3>
@@ -180,9 +175,9 @@
           </table>
         </div>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'despesas') {
+    <ng-container *ngIf="activeOwnerTab === 'despesas'">
       <div class="toolbar"><button class="btn gold" (click)="addExpense()">+ Registrar Despesa</button></div>
       <div class="miniCards">
         <div class="mini"><small>Total mês</small><h3 class="redText">{{ totalExpenses }}</h3></div>
@@ -194,24 +189,23 @@
         <table class="table">
           <thead><tr><th>Data</th><th>Item</th><th>Quantidade</th><th>Custo</th><th>Motivo</th><th>Responsável</th></tr></thead>
           <tbody>
-            @for (e of state.expenses; track e.date) {
+            <ng-container *ngFor="let e of state.expenses">
               <tr><td>{{ e.date }}</td><td>{{ e.item }}</td><td>{{ e.qty }}</td><td class="redText">{{ money(e.cost) }}</td><td><span class="badge low">{{ e.status }}</span></td><td>{{ e.resp }}</td></tr>
-            }
+            </ng-container>
           </tbody>
         </table>
       </div>
-    }
+    </ng-container>
 
-    @if (activeOwnerTab === 'analytics' || activeOwnerTab === 'funcionarios') {
+    <ng-container *ngIf="activeOwnerTab === 'analytics' || activeOwnerTab === 'funcionarios'">
       <div class="panel">
         <h3>{{ activeOwnerTab[0].toUpperCase() + activeOwnerTab.slice(1) }}</h3>
         <p style="color:#8b95a5">Área criada e funcionando. Você pode expandir aqui com mais relatórios, filtros e cadastros.</p>
       </div>
-    }
-  }
+    </ng-container>
 
   <!-- CARDÁPIO -->
-  @if (activeSection === 'menu') {
+  <ng-container *ngIf="activeSection === 'menu'">
     <div class="toolbar">
       <input class="search" [(ngModel)]="dishName" placeholder="Nome do prato">
       <input class="input" [(ngModel)]="dishPrice" type="number" placeholder="Preço">
@@ -227,36 +221,30 @@
       <table class="table">
         <thead><tr><th>Prato</th><th>Preço</th><th>Ingrediente principal</th><th>Status</th><th>Ação</th></tr></thead>
         <tbody>
-          @for (d of state.dishes; track d.name; let i = $index) {
-            <tr>
-              <td><b>{{ d.name }}</b></td>
-              <td class="yellow">{{ money(d.price) }}</td>
-              <td>{{ d.ing }}</td>
-              <td><span class="badge ok">Ativo</span></td>
-              <td><button class="btn red" (click)="removeDish(i)">Excluir</button></td>
-            </tr>
-          }
+          <tr *ngFor="let d of state.dishes; let i = index">
+            <td><b>{{ d.name }}</b></td>
+            <td class="yellow">{{ money(d.price) }}</td>
+            <td>{{ d.ing }}</td>
+            <td><span class="badge ok">Ativo</span></td>
+            <td><button class="btn red" (click)="removeDish(i)">Excluir</button></td>
+          </tr>
         </tbody>
       </table>
     </div>
-  }
+  </ng-container>
 
   <!-- PEDIDOS -->
-  @if (activeSection === 'orders') {
+  <ng-container *ngIf="activeSection === 'orders'">
     <div class="panel">
       <h3>Criar pedido teste</h3>
       <p style="color:#8b95a5;margin-bottom:12px">Quando o pedido é criado, o estoque baixa automaticamente.</p>
       <div class="formGrid">
         <input class="input" [(ngModel)]="clientName" placeholder="Nome do cliente">
         <select class="input" [(ngModel)]="selectDishValue">
-          @for (d of state.dishes; track d.name) {
-            <option [value]="d.name">{{ d.name }} - {{ money(d.price) }}</option>
-          }
+          <option *ngFor="let d of state.dishes" [value]="d.name">{{ d.name }} - {{ money(d.price) }}</option>
         </select>
         <select class="input" [(ngModel)]="selectDriverValue">
-          @for (d of state.drivers; track d.name) {
-            <option [value]="d.name">{{ d.name }}</option>
-          }
+          <option *ngFor="let d of state.drivers" [value]="d.name">{{ d.name }}</option>
         </select>
         <button class="btn gold" (click)="createOrder()"><i class="fa-solid fa-plus"></i> Criar Pedido</button>
       </div>
@@ -266,34 +254,32 @@
       <table class="table">
         <thead><tr><th>Código</th><th>Cliente</th><th>Prato</th><th>Valor</th><th>Status</th><th>Motoboy</th><th>Ações</th></tr></thead>
         <tbody>
-          @for (o of reversedOrders; track o.id; let ri = $index) {
-            <tr>
-              <td>#-{{ o.id }}</td>
-              <td>{{ o.client }}</td>
-              <td>{{ o.dish }}</td>
-              <td class="yellow">{{ money(o.price) }}</td>
-              <td><span class="badge" [ngClass]="orderBadgeClass(o.status)">{{ o.status }}</span></td>
-              <td>{{ o.driver }}</td>
-              <td>
-                <button class="btn green" (click)="changeOrder(getOrderIndex(ri), 'Pronto')">Pronto</button>
-                <button class="btn blue" (click)="changeOrder(getOrderIndex(ri), 'Finalizado')">Finalizar</button>
-              </td>
-            </tr>
-          }
+          <tr *ngFor="let o of reversedOrders; let ri = index">
+            <td>#-{{ o.id }}</td>
+            <td>{{ o.client }}</td>
+            <td>{{ o.dish }}</td>
+            <td class="yellow">{{ money(o.price) }}</td>
+            <td><span class="badge" [ngClass]="orderBadgeClass(o.status)">{{ o.status }}</span></td>
+            <td>{{ o.driver }}</td>
+            <td>
+              <button class="btn green" (click)="changeOrder(getOrderIndex(ri), 'Pronto')">Pronto</button>
+              <button class="btn blue" (click)="changeOrder(getOrderIndex(ri), 'Finalizado')">Finalizar</button>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
-  }
+  </ng-container>
 
   <!-- MOTOBOYS -->
-  @if (activeSection === 'motoboy') {
+  <ng-container *ngIf="activeSection === 'motoboy'">
     <div class="mapLayout">
       <div>
         <div class="panel">
           <h3>Meus Motoboys</h3>
           <p style="color:#8b95a5;margin-bottom:14px">Clique em um motoboy para ver no mapa.</p>
           <div class="driverList">
-            @for (d of state.drivers; track d.name; let i = $index) {
+            <ng-container *ngFor="let d of state.drivers; let i = index">
               <div class="driver" (click)="selectDriverMap(i)">
                 <h4>
                   <span><span class="dot" [class.red]="d.status !== 'online'"></span>{{ d.name }}</span>
@@ -303,7 +289,7 @@
                 <p>Pedido: {{ d.order }}</p>
                 <p>Lat: {{ d.lat.toFixed(5) }} | Lng: {{ d.lng.toFixed(5) }}</p>
               </div>
-            }
+            </ng-container>
           </div>
           <br>
           <button class="btn gold" (click)="simulateDriverMove()"><i class="fa-solid fa-location-crosshairs"></i> Atualizar localização</button>
@@ -312,32 +298,30 @@
       </div>
       <div><div id="map"></div></div>
     </div>
-  }
+  </ng-container>
 
   <!-- CLIENTES -->
-  @if (activeSection === 'clients') {
+  <ng-container *ngIf="activeSection === 'clients'">
     <div class="tableWrap">
       <table class="table">
         <thead><tr><th>Cliente</th><th>Telefone</th><th>Pedidos</th><th>Total gasto</th><th>Status</th></tr></thead>
         <tbody>
-          @for (c of state.clients; track c.name) {
-            <tr>
-              <td><b>{{ c.name }}</b></td>
-              <td>{{ c.phone }}</td>
-              <td>{{ c.orders }}</td>
-              <td class="yellow">{{ money(c.total) }}</td>
-              <td><span class="badge ok">{{ c.status }}</span></td>
-            </tr>
-          }
+          <tr *ngFor="let c of state.clients">
+            <td><b>{{ c.name }}</b></td>
+            <td>{{ c.phone }}</td>
+            <td>{{ c.orders }}</td>
+            <td class="yellow">{{ money(c.total) }}</td>
+            <td><span class="badge ok">{{ c.status }}</span></td>
+          </tr>
         </tbody>
       </table>
     </div>
-  }
+  </ng-container>
 
 </main>
 
 <!-- MODAL -->
-@if (modalVisible) {
+<ng-container *ngIf="modalVisible">
   <div class="modal show" (click)="modalVisible=false">
     <div class="modalBox" (click)="$event.stopPropagation()">
       <div class="modalTop">
@@ -354,9 +338,9 @@
       <button class="btn gold" (click)="saveNewStockItem()">Salvar</button>
     </div>
   </div>
-}
+</ng-container>
 
 <!-- TOAST -->
-@if (toastVisible) {
+<ng-container *ngIf="toastVisible">
   <div class="toast show">{{ toastMessage }}</div>
-}
+</ng-container>
