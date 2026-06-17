@@ -1,0 +1,225 @@
+<div class="painel-cozinha-v2">
+  <!-- HEADER PRINCIPAL -->
+  <header class="header-v2">
+    <div class="header-esquerda">
+      <div class="logo-area">
+        <span class="icone-cozinha">🍳</span>
+        <div>
+          <h1>Painel da Cozinha</h1>
+          <p>Gerencie seus pedidos em tempo real</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-direita">
+      <div class="status-online" [class.ativo]="statusOnline">
+        <span class="ponto"></span>
+        {{ statusOnline ? 'Cozinha Ativa' : 'Pausado' }}
+      </div>
+      <button class="btn-header" (click)="pausarCozinha()">
+        {{ statusOnline ? '⏸ Pausar' : '▶ Retomar' }}
+      </button>
+      <button class="btn-header btn-sair" (click)="sair()">Sair</button>
+    </div>
+  </header>
+
+  <!-- CARDS DE RESUMO -->
+  <section class="resumo-v2">
+    <div class="card-stat">
+      <div class="stat-numero">{{ totalAtivos }}</div>
+      <div class="stat-label">Ativos</div>
+      <div class="stat-barra"></div>
+    </div>
+    <div class="card-stat">
+      <div class="stat-numero">{{ countAguardando }}</div>
+      <div class="stat-label">Aguardando</div>
+      <div class="stat-barra barra-red"></div>
+    </div>
+    <div class="card-stat">
+      <div class="stat-numero">{{ countEmPreparo }}</div>
+      <div class="stat-label">Em Preparo</div>
+      <div class="stat-barra barra-yellow"></div>
+    </div>
+    <div class="card-stat">
+      <div class="stat-numero">{{ countProntos }}</div>
+      <div class="stat-label">Prontos</div>
+      <div class="stat-barra barra-green"></div>
+    </div>
+  </section>
+
+  <!-- ABAS DE STATUS -->
+  <nav class="abas-v2">
+    <button
+      class="aba-btn-v2"
+      [class.ativo]="abaAtiva === 'aguardando'"
+      (click)="selecionarAba('aguardando')"
+    >
+      <span class="icone-aba">⏰</span>
+      <span class="texto-aba">Aguardando</span>
+      <span class="badge-aba" *ngIf="countAguardando > 0">{{ countAguardando }}</span>
+    </button>
+
+    <button
+      class="aba-btn-v2"
+      [class.ativo]="abaAtiva === 'em_preparo'"
+      (click)="selecionarAba('em_preparo')"
+    >
+      <span class="icone-aba">🔥</span>
+      <span class="texto-aba">Em Preparo</span>
+      <span class="badge-aba" *ngIf="countEmPreparo > 0">{{ countEmPreparo }}</span>
+    </button>
+
+    <button
+      class="aba-btn-v2"
+      [class.ativo]="abaAtiva === 'pronto'"
+      (click)="selecionarAba('pronto')"
+    >
+      <span class="icone-aba">✅</span>
+      <span class="texto-aba">Pronto</span>
+      <span class="badge-aba" *ngIf="countProntos > 0">{{ countProntos }}</span>
+    </button>
+  </nav>
+
+  <!-- GRID DE PEDIDOS -->
+  <section class="pedidos-v2">
+    <!-- AGUARDANDO -->
+    <ng-container *ngIf="abaAtiva === 'aguardando'">
+      <div *ngIf="pedidosAguardando.length === 0" class="vazio-v2">
+        <div class="vazio-icone">📭</div>
+        <p>Nenhum pedido aguardando</p>
+      </div>
+
+      <div class="grid-pedidos">
+        <article 
+          class="card-pedido-v2" 
+          *ngFor="let pedido of pedidosAguardando"
+          [class.urgente]="getUrgencia(pedido) === 'urgente'"
+          [class.normal]="getUrgencia(pedido) === 'normal'"
+        >
+          <div class="pedido-header-v2">
+            <div class="numero-e-tempo">
+              <span class="numero-v2">{{ pedido.numero }}</span>
+              <span class="tempo">{{ getTempoDecorrido(pedido) }}</span>
+            </div>
+            <span class="status-badge status-aguardando-v2">Aguardando</span>
+          </div>
+
+          <div class="pedido-cliente-v2">
+            <strong>{{ pedido.cliente }}</strong>
+            <small>{{ pedido.local }}</small>
+          </div>
+
+          <div class="pedido-itens-v2">
+            <div class="item-v2" *ngFor="let item of pedido.itens">
+              <span class="qtd">{{ item.quantidade }}x</span>
+              <span class="nome">{{ item.nome }}</span>
+            </div>
+          </div>
+
+          <div class="pedido-rodape-v2">
+            <span class="valor">R$ {{ pedido.valor.toFixed(2) }}</span>
+          </div>
+
+          <button
+            class="btn-acao-v2 btn-iniciar-v2"
+            (click)="iniciarPreparo(pedido)"
+          >
+            <span>▶</span> Iniciar Preparo
+          </button>
+        </article>
+      </div>
+    </ng-container>
+
+    <!-- EM PREPARO -->
+    <ng-container *ngIf="abaAtiva === 'em_preparo'">
+      <div *ngIf="pedidosEmPreparo.length === 0" class="vazio-v2">
+        <div class="vazio-icone">🔥</div>
+        <p>Nenhum pedido em preparo</p>
+      </div>
+
+      <div class="grid-pedidos">
+        <article 
+          class="card-pedido-v2" 
+          *ngFor="let pedido of pedidosEmPreparo"
+        >
+          <div class="pedido-header-v2">
+            <div class="numero-e-tempo">
+              <span class="numero-v2">{{ pedido.numero }}</span>
+              <span class="tempo">{{ getTempoDecorrido(pedido) }}</span>
+            </div>
+            <span class="status-badge status-preparo-v2">Em Preparo</span>
+          </div>
+
+          <div class="pedido-cliente-v2">
+            <strong>{{ pedido.cliente }}</strong>
+            <small>{{ pedido.local }}</small>
+          </div>
+
+          <div class="pedido-itens-v2">
+            <div class="item-v2" *ngFor="let item of pedido.itens">
+              <span class="qtd">{{ item.quantidade }}x</span>
+              <span class="nome">{{ item.nome }}</span>
+            </div>
+          </div>
+
+          <div class="pedido-rodape-v2">
+            <span class="valor">R$ {{ pedido.valor.toFixed(2) }}</span>
+          </div>
+
+          <button
+            class="btn-acao-v2 btn-pronto-v2"
+            (click)="marcarPronto(pedido)"
+          >
+            <span>✓</span> Marcar Pronto
+          </button>
+        </article>
+      </div>
+    </ng-container>
+
+    <!-- PRONTOS -->
+    <ng-container *ngIf="abaAtiva === 'pronto'">
+      <div *ngIf="pedidosProntos.length === 0" class="vazio-v2">
+        <div class="vazio-icone">✨</div>
+        <p>Nenhum pedido pronto</p>
+      </div>
+
+      <div class="grid-pedidos">
+        <article 
+          class="card-pedido-v2 pronto" 
+          *ngFor="let pedido of pedidosProntos"
+        >
+          <div class="pedido-header-v2">
+            <div class="numero-e-tempo">
+              <span class="numero-v2">{{ pedido.numero }}</span>
+              <span class="tempo">{{ getTempoDecorrido(pedido) }}</span>
+            </div>
+            <span class="status-badge status-pronto-v2">Pronto</span>
+          </div>
+
+          <div class="pedido-cliente-v2">
+            <strong>{{ pedido.cliente }}</strong>
+            <small>{{ pedido.local }}</small>
+          </div>
+
+          <div class="pedido-itens-v2">
+            <div class="item-v2" *ngFor="let item of pedido.itens">
+              <span class="qtd">{{ item.quantidade }}x</span>
+              <span class="nome">{{ item.nome }}</span>
+            </div>
+          </div>
+
+          <div class="pedido-rodape-v2">
+            <span class="valor">R$ {{ pedido.valor.toFixed(2) }}</span>
+          </div>
+
+          <button
+            class="btn-acao-v2 btn-entregar-v2"
+            (click)="entregarPedido(pedido)"
+          >
+            <span>🚚</span> Entregar
+          </button>
+        </article>
+      </div>
+    </ng-container>
+  </section>
+</div>

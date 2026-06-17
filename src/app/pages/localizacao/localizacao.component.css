@@ -1,0 +1,50 @@
+:host { display: block; background: #050505; color: #fff; font-family: Arial, Helvetica, sans-serif; min-height: 100vh; }
+* { box-sizing: border-box; }
+.container { max-width: 1030px; margin: 0 auto; padding: 22px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+.title-area { display: flex; align-items: center; gap: 10px; }
+.title-icon { width: 32px; height: 32px; border: 1px solid #d4a91f; color: #d4a91f; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+h1 { font-size: 18px; margin: 0; }
+.subtitle { color: #aaa; font-size: 12px; margin-top: 3px; }
+.back-btn { color: #fff; background: transparent; text-decoration: none; border: 1px solid #333; padding: 7px 14px; border-radius: 20px; font-size: 12px; cursor: pointer; }
+.map-card { position: relative; height: 310px; border: 1px solid #333; border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.map-card iframe { width: 100%; height: 100%; border: 0; filter: grayscale(100%) invert(90%) contrast(90%); }
+.map-info { position: absolute; left: 24px; right: 24px; bottom: 18px; background: rgba(5,5,5,0.92); border: 1px solid #222; border-radius: 12px; padding: 18px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.info-left { display: flex; align-items: center; gap: 12px; }
+.small-icon { min-width: 34px; height: 34px; border: 1px solid #d4a91f; color: #d4a91f; border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+.map-info h2 { font-size: 15px; margin: 0 0 5px; }
+.map-info p { font-size: 12px; color: #bbb; margin: 0; }
+.btn-row { display: flex; gap: 10px; }
+.btn { display: inline-block; text-decoration: none; border-radius: 20px; padding: 9px 16px; font-size: 12px; font-weight: bold; white-space: nowrap; }
+.btn-yellow { background: #d4a91f; color: #111; }
+.btn-dark { background: #121212; color: #fff; border: 1px solid #333; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 18px; }
+.card { background: #0b0b0b; border: 1px solid #2b2b2b; border-radius: 12px; padding: 20px; }
+.card-title { display: flex; align-items: center; gap: 10px; color: #f3f3f3; font-size: 16px; margin: 0 0 18px; }
+.card p { color: #ddd; font-size: 13px; margin: 9px 0; }
+.full-btn { width: 100%; text-align: center; margin-top: 15px; display: block; }
+.time-box { border: 1px solid #333; border-radius: 9px; padding: 14px; margin-bottom: 12px; background: #111; }
+.time-box span { display: block; color: #d4a91f; font-size: 12px; margin-bottom: 4px; }
+.time-box strong { font-size: 14px; }
+.status-box { border: 1px solid #d4a91f; background: rgba(212,169,31,0.09); border-radius: 9px; padding: 14px; color: #d4a91f; font-size: 13px; }
+.section-title { font-size: 15px; margin: 8px 0 12px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin-bottom: 22px; }
+.contact-card { background: #0b0b0b; border: 1px solid #2b2b2b; border-radius: 10px; padding: 18px; }
+.contact-card i { width: 32px; height: 32px; border-radius: 8px; background: rgba(212,169,31,0.12); color: #d4a91f; display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+.contact-card h4 { margin: 0 0 8px; font-size: 14px; }
+.contact-card p { color: #ccc; font-size: 12px; margin: 0 0 12px; }
+.btn-green { background: #078b3e; color: white; }
+.btn-email { background: #d4a91f; color: #111; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.feature { text-align: center; background: #0b0b0b; border: 1px solid #2b2b2b; border-radius: 10px; padding: 20px 10px; }
+.feature i { color: #d4a91f; font-size: 20px; margin-bottom: 12px; }
+.feature h4 { font-size: 13px; margin: 0 0 6px; }
+.feature p { font-size: 11px; color: #888; margin: 0; }
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .map-info { position: static; border-radius: 0; flex-direction: column; align-items: flex-start; }
+  .map-card { height: auto; }
+  .map-card iframe { height: 260px; }
+  .btn-row { width: 100%; flex-direction: column; }
+  .btn { width: 100%; text-align: center; }
+}

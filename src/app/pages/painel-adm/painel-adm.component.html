@@ -1,0 +1,362 @@
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brandIcon"><i class="fa-solid fa-utensils"></i></div>
+    <div><h2>EMÍDIO</h2><p>Painel Admin</p></div>
+  </div>
+  <div class="nav">
+    <button [class.active]="activeSection==='dashboard'" (click)="setSection('dashboard','Dashboard')"><i class="fa-solid fa-table-cells-large"></i> Dashboard</button>
+    <button [class.active]="activeSection==='owner'" (click)="setSection('owner','Olho do Dono')"><i class="fa-regular fa-eye"></i> Olho do Dono</button>
+    <button [class.active]="activeSection==='menu'" (click)="setSection('menu','Cadastrar Prato')"><i class="fa-regular fa-circle-plus"></i> Cadastrar Prato</button>
+    <button [class.active]="activeSection==='orders'" (click)="setSection('orders','Pedidos')"><i class="fa-solid fa-basket-shopping"></i> Pedidos</button>
+    <button [class.active]="activeSection==='motoboy'" (click)="setSection('motoboy','Entregadores')"><i class="fa-solid fa-motorcycle"></i> Entregadores</button>
+    <button [class.active]="activeSection==='clients'" (click)="setSection('clients','Clientes')"><i class="fa-regular fa-user"></i> Clientes</button>
+  </div>
+  <div class="sideBottom">
+    <div class="userbox">
+      <small>Logado como</small>
+      <h4>Restaurante Emídio Gastronomia</h4>
+      <p>adm&#64;gmail.com</p>
+    </div>
+<button type="button" class="logout" (click)="sair()">
+  <i class="fa-solid fa-arrow-right-from-bracket"></i> Sair
+</button>  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div class="title">
+      <h1>{{ pageTitle }}</h1>
+      <p>Controle geral do restaurante</p>
+    </div>
+    <div class="alert"><i class="fa-solid fa-triangle-exclamation"></i> {{ alertCount }} alertas críticos</div>
+  </div>
+
+  <!-- DASHBOARD -->
+  @if (activeSection === 'dashboard') {
+    <div class="grid grid4">
+      <div class="card"><div class="cardIcon"><i class="fa-solid fa-bag-shopping"></i></div><small>Pedidos Ativos</small><h2>{{ activeOrders }}</h2><small>Em preparação ou entrega</small></div>
+      <div class="card"><div class="cardIcon"><i class="fa-solid fa-dollar-sign"></i></div><small>Receita do Dia</small><h2 class="yellow">{{ dayRevenue }}</h2><small>Vendas finalizadas</small></div>
+      <div class="card"><div class="cardIcon"><i class="fa-solid fa-box"></i></div><small>Total no Estoque</small><h2>{{ stockValue }}</h2><small>{{ itemsCount }}</small></div>
+      <div class="card"><div class="cardIcon"><i class="fa-solid fa-motorcycle"></i></div><small>Motoboys Online</small><h2>{{ driversOnline }}</h2><small>Rastreamento ativo</small></div>
+    </div>
+    <br>
+    <div class="panel">
+      <h3><i class="fa-regular fa-clock yellow"></i> Pedidos Recentes</h3>
+      <div class="orderCards">
+        @for (o of state.orders; track o.id) {
+          <div class="orderCard">
+            <h4>#-{{ o.id }} {{ o.client }}</h4>
+            <p class="yellow">{{ o.dish }}</p>
+            <p>{{ o.date }}</p>
+            <br>
+            <span class="badge" [ngClass]="orderBadgeClass(o.status)">{{ o.status }}</span>
+            <h3>{{ money(o.price) }}</h3>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- OLHO DO DONO -->
+  @if (activeSection === 'owner') {
+    <div class="tabs">
+      <button [class.active]="activeOwnerTab==='visao'" (click)="setOwnerTab('visao')"><i class="fa-regular fa-eye"></i> Visão Geral</button>
+      <button [class.active]="activeOwnerTab==='estoque'" (click)="setOwnerTab('estoque')"><i class="fa-solid fa-box"></i> Estoque</button>
+      <button [class.active]="activeOwnerTab==='compras'" (click)="setOwnerTab('compras')"><i class="fa-solid fa-cart-shopping"></i> Lista de Compras</button>
+      <button [class.active]="activeOwnerTab==='fornecedores'" (click)="setOwnerTab('fornecedores')"><i class="fa-solid fa-truck"></i> Fornecedores</button>
+      <button [class.active]="activeOwnerTab==='financeiro'" (click)="setOwnerTab('financeiro')"><i class="fa-solid fa-dollar-sign"></i> Financeiro</button>
+      <button [class.active]="activeOwnerTab==='despesas'" (click)="setOwnerTab('despesas')"><i class="fa-solid fa-trash"></i> Despesas</button>
+      <button [class.active]="activeOwnerTab==='analytics'" (click)="setOwnerTab('analytics')"><i class="fa-solid fa-chart-simple"></i> Analytics</button>
+      <button [class.active]="activeOwnerTab==='funcionarios'" (click)="setOwnerTab('funcionarios')"><i class="fa-solid fa-user-tie"></i> Funcionários</button>
+    </div>
+
+    @if (activeOwnerTab === 'visao') {
+      <div class="dangerStrip">
+        <b><i class="fa-solid fa-fire"></i> Itens críticos no estoque:</b>
+        @for (i of criticalItems; track i.name) {
+          <span>{{ i.name }} ({{ i.qty }} {{ i.unit }})</span>
+        }
+      </div>
+      <div class="grid grid4">
+        <div class="card"><span class="up">↑ 12%</span><div class="cardIcon"><i class="fa-solid fa-dollar-sign"></i></div><small>Lucro Líquido</small><h2>{{ money(77400) }}</h2><small>Receita - todos os custos</small></div>
+        <div class="card"><div class="cardIcon"><i class="fa-solid fa-bullseye"></i></div><small>Ponto de Equilíbrio</small><h2>550 pedidos/mês</h2><small>R$ 23.540,00</small></div>
+        <div class="card"><div class="cardIcon"><i class="fa-solid fa-cube"></i></div><small>Valor em Estoque</small><h2>{{ totalStockValue }}</h2><small>{{ state.stock.length }} itens cadastrados</small></div>
+        <div class="card"><div class="cardIcon"><i class="fa-solid fa-triangle-exclamation"></i></div><small>Alertas de Estoque</small><h2>{{ criticalCount }}</h2><small>{{ criticalCount }} críticos</small></div>
+      </div>
+      <br>
+      <div class="grid grid2">
+        <div class="panel"><h3>Receita vs Custo vs Lucro</h3><div class="chartBox"><canvas id="lineChart"></canvas></div></div>
+        <div class="panel"><h3>Distribuição de Custos</h3><div class="chartBox"><canvas id="pieChart"></canvas></div></div>
+      </div>
+    }
+
+    @if (activeOwnerTab === 'estoque') {
+      <div class="toolbar">
+        <input class="search" [(ngModel)]="stockSearch" placeholder="Buscar item, categoria, fornecedor...">
+        <button class="btn gold" (click)="modalVisible=true">+ Novo item</button>
+        <button class="btn" (click)="buyCritical()">Comprar críticos</button>
+      </div>
+      <div class="miniCards">
+        <div class="mini"><small>Total estoque</small><h3>{{ totalStockValue }}</h3></div>
+        <div class="mini"><small>Itens críticos</small><h3 class="redText">{{ criticalCount }}</h3></div>
+        <div class="mini"><small>Itens baixos</small><h3>{{ lowCount }}</h3></div>
+        <div class="mini"><small>Itens OK</small><h3 class="greenText">{{ okCount }}</h3></div>
+      </div>
+      <div class="tableWrap">
+        <table class="table">
+          <thead><tr><th>Item</th><th>Categoria</th><th>Fornecedor</th><th>Estoque Atual</th><th>Mín/Máx</th><th>Custo</th><th>Valor Total</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody>
+            @for (item of filteredStock; track item.name; let idx = $index) {
+              <tr>
+                <td><b>{{ item.name }}</b></td>
+                <td>{{ item.cat }}</td>
+                <td>{{ item.supplier }}</td>
+                <td><b>{{ item.qty }} {{ item.unit }}</b><div class="progress"><b [style.width.%]="stockProgress(item)"></b></div></td>
+                <td>{{ item.min }} / {{ item.min * 3 }}</td>
+                <td>{{ money(item.cost) }}</td>
+                <td class="yellow">{{ money(item.qty * item.cost) }}</td>
+                <td><span class="badge" [ngClass]="stockBadgeClass(item)">{{ stockStatus(item) }}</span></td>
+                <td><button class="btn" (click)="restock(state.stock.indexOf(item))">+</button> <button class="btn red" (click)="removeStock(state.stock.indexOf(item))">-</button></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (activeOwnerTab === 'compras') {
+      <div class="panel">
+        <h3>Lista de Compras</h3>
+        @for (i of criticalItems; track i.name) {
+          <div class="card" style="margin-bottom:10px;min-height:80px">
+            <h4 class="redText">{{ i.name }}</h4>
+            <small>{{ i.supplier }}</small>
+            <span style="float:right" class="redText">Atual: {{ i.qty }}{{ i.unit }} | Comprar: {{ i.min*2-i.qty > 1 ? i.min*2-i.qty : 1 }}</span>
+          </div>
+        }
+        <button class="btn gold" (click)="buyCritical()">Marcar críticos como comprados</button>
+      </div>
+    }
+
+    @if (activeOwnerTab === 'fornecedores') {
+      <button class="btn gold" style="float:right">+ Novo Fornecedor</button>
+      <h3>Fornecedores</h3><br>
+      <div class="supplierGrid">
+        @for (s of suppliers; track s; let i = $index) {
+          <div class="supplier">
+            <span class="stars">★★★★★ <span class="badge ok">ativo</span></span>
+            <h4>{{ s }}</h4>
+            <p style="color:#8b95a5">Contato: {{ i % 2 ? 'João' : 'Carlos' }} • São Paulo, SP</p>
+            <br>
+            <button class="btn">Detalhes</button>
+            <button class="btn blue">Pedido</button>
+            <p class="yellow" style="float:right">Estoque: {{ money(1200 + i * 430) }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeOwnerTab === 'financeiro') {
+      <div class="grid grid2">
+        <div class="panel">
+          <h3>Ponto de Equilíbrio</h3>
+          <p>Custos fixos mensais <b style="float:right">R$ 6.950,00</b></p><br>
+          <p>Custos variáveis mensais <b style="float:right">R$ 7.420,00</b></p><br>
+          <p>Ticket médio <b style="float:right">R$ 42,90</b></p><br>
+          <div class="card" style="background:#20152b;border-color:#7d45ad"><h2>550 pedidos/mês</h2><p class="yellow">R$ 23.540,00</p></div>
+        </div>
+        <div class="panel"><h3>Lucro Real</h3><div class="chartBox"><canvas id="barChart"></canvas></div></div>
+      </div>
+      <br>
+      <div class="panel">
+        <h3>Relatório financeiro</h3>
+        <div class="tableWrap">
+          <table class="table">
+            <thead><tr><th>Funcionário</th><th>Cargo</th><th>Salário</th><th>INSS</th><th>VT</th><th>Total</th></tr></thead>
+            <tbody>
+              <tr><td>Maria Oliveira</td><td>Cozinheira</td><td>R$ 2.200,00</td><td>R$ 176,00</td><td>R$ 220,00</td><td class="yellow">R$ 2.596,00</td></tr>
+              <tr><td>João Santos</td><td>Garçom</td><td>R$ 1.800,00</td><td>R$ 144,00</td><td>R$ 220,00</td><td class="yellow">R$ 2.164,00</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    @if (activeOwnerTab === 'despesas') {
+      <div class="toolbar"><button class="btn gold" (click)="addExpense()">+ Registrar Despesa</button></div>
+      <div class="miniCards">
+        <div class="mini"><small>Total mês</small><h3 class="redText">{{ totalExpenses }}</h3></div>
+        <div class="mini"><small>Vazamentos</small><h3>2</h3></div>
+        <div class="mini"><small>Quebras</small><h3>1</h3></div>
+        <div class="mini"><small>Registros</small><h3>{{ state.expenses.length }}</h3></div>
+      </div>
+      <div class="tableWrap">
+        <table class="table">
+          <thead><tr><th>Data</th><th>Item</th><th>Quantidade</th><th>Custo</th><th>Motivo</th><th>Responsável</th></tr></thead>
+          <tbody>
+            @for (e of state.expenses; track e.date) {
+              <tr><td>{{ e.date }}</td><td>{{ e.item }}</td><td>{{ e.qty }}</td><td class="redText">{{ money(e.cost) }}</td><td><span class="badge low">{{ e.status }}</span></td><td>{{ e.resp }}</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    @if (activeOwnerTab === 'analytics' || activeOwnerTab === 'funcionarios') {
+      <div class="panel">
+        <h3>{{ activeOwnerTab[0].toUpperCase() + activeOwnerTab.slice(1) }}</h3>
+        <p style="color:#8b95a5">Área criada e funcionando. Você pode expandir aqui com mais relatórios, filtros e cadastros.</p>
+      </div>
+    }
+  }
+
+  <!-- CARDÁPIO -->
+  @if (activeSection === 'menu') {
+    <div class="toolbar">
+      <input class="search" [(ngModel)]="dishName" placeholder="Nome do prato">
+      <input class="input" [(ngModel)]="dishPrice" type="number" placeholder="Preço">
+      <select class="input" [(ngModel)]="dishIng">
+        <option value="Carne Seca">Carne Seca</option>
+        <option value="Arroz Agulhinha">Arroz Agulhinha</option>
+        <option value="Peixe Fresco">Peixe Fresco</option>
+        <option value="Queijo Mussarela">Queijo Mussarela</option>
+      </select>
+      <button class="btn gold" (click)="addDish()"><i class="fa-solid fa-plus"></i> Adicionar prato</button>
+    </div>
+    <div class="tableWrap">
+      <table class="table">
+        <thead><tr><th>Prato</th><th>Preço</th><th>Ingrediente principal</th><th>Status</th><th>Ação</th></tr></thead>
+        <tbody>
+          @for (d of state.dishes; track d.name; let i = $index) {
+            <tr>
+              <td><b>{{ d.name }}</b></td>
+              <td class="yellow">{{ money(d.price) }}</td>
+              <td>{{ d.ing }}</td>
+              <td><span class="badge ok">Ativo</span></td>
+              <td><button class="btn red" (click)="removeDish(i)">Excluir</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- PEDIDOS -->
+  @if (activeSection === 'orders') {
+    <div class="panel">
+      <h3>Criar pedido teste</h3>
+      <p style="color:#8b95a5;margin-bottom:12px">Quando o pedido é criado, o estoque baixa automaticamente.</p>
+      <div class="formGrid">
+        <input class="input" [(ngModel)]="clientName" placeholder="Nome do cliente">
+        <select class="input" [(ngModel)]="selectDishValue">
+          @for (d of state.dishes; track d.name) {
+            <option [value]="d.name">{{ d.name }} - {{ money(d.price) }}</option>
+          }
+        </select>
+        <select class="input" [(ngModel)]="selectDriverValue">
+          @for (d of state.drivers; track d.name) {
+            <option [value]="d.name">{{ d.name }}</option>
+          }
+        </select>
+        <button class="btn gold" (click)="createOrder()"><i class="fa-solid fa-plus"></i> Criar Pedido</button>
+      </div>
+    </div>
+    <br>
+    <div class="tableWrap">
+      <table class="table">
+        <thead><tr><th>Código</th><th>Cliente</th><th>Prato</th><th>Valor</th><th>Status</th><th>Motoboy</th><th>Ações</th></tr></thead>
+        <tbody>
+          @for (o of reversedOrders; track o.id; let ri = $index) {
+            <tr>
+              <td>#-{{ o.id }}</td>
+              <td>{{ o.client }}</td>
+              <td>{{ o.dish }}</td>
+              <td class="yellow">{{ money(o.price) }}</td>
+              <td><span class="badge" [ngClass]="orderBadgeClass(o.status)">{{ o.status }}</span></td>
+              <td>{{ o.driver }}</td>
+              <td>
+                <button class="btn green" (click)="changeOrder(getOrderIndex(ri), 'Pronto')">Pronto</button>
+                <button class="btn blue" (click)="changeOrder(getOrderIndex(ri), 'Finalizado')">Finalizar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+  <!-- MOTOBOYS -->
+  @if (activeSection === 'motoboy') {
+    <div class="mapLayout">
+      <div>
+        <div class="panel">
+          <h3>Meus Motoboys</h3>
+          <p style="color:#8b95a5;margin-bottom:14px">Clique em um motoboy para ver no mapa.</p>
+          <div class="driverList">
+            @for (d of state.drivers; track d.name; let i = $index) {
+              <div class="driver" (click)="selectDriverMap(i)">
+                <h4>
+                  <span><span class="dot" [class.red]="d.status !== 'online'"></span>{{ d.name }}</span>
+                  <span>{{ d.battery }}%</span>
+                </h4>
+                <p>{{ d.phone }}</p>
+                <p>Pedido: {{ d.order }}</p>
+                <p>Lat: {{ d.lat.toFixed(5) }} | Lng: {{ d.lng.toFixed(5) }}</p>
+              </div>
+            }
+          </div>
+          <br>
+          <button class="btn gold" (click)="simulateDriverMove()"><i class="fa-solid fa-location-crosshairs"></i> Atualizar localização</button>
+          <button class="btn blue" (click)="centerAllDrivers()"><i class="fa-solid fa-map-location-dot"></i> Ver todos</button>
+        </div>
+      </div>
+      <div><div id="map"></div></div>
+    </div>
+  }
+
+  <!-- CLIENTES -->
+  @if (activeSection === 'clients') {
+    <div class="tableWrap">
+      <table class="table">
+        <thead><tr><th>Cliente</th><th>Telefone</th><th>Pedidos</th><th>Total gasto</th><th>Status</th></tr></thead>
+        <tbody>
+          @for (c of state.clients; track c.name) {
+            <tr>
+              <td><b>{{ c.name }}</b></td>
+              <td>{{ c.phone }}</td>
+              <td>{{ c.orders }}</td>
+              <td class="yellow">{{ money(c.total) }}</td>
+              <td><span class="badge ok">{{ c.status }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+
+</main>
+
+<!-- MODAL -->
+@if (modalVisible) {
+  <div class="modal show" (click)="modalVisible=false">
+    <div class="modalBox" (click)="$event.stopPropagation()">
+      <div class="modalTop">
+        <h2>Novo item de estoque</h2>
+        <button class="x" (click)="modalVisible=false">X</button>
+      </div>
+      <div class="formGrid">
+        <input class="input" [(ngModel)]="newItemName" placeholder="Item">
+        <input class="input" [(ngModel)]="newItemCat" placeholder="Categoria">
+        <input class="input" [(ngModel)]="newItemQty" type="number" placeholder="Qtd">
+        <input class="input" [(ngModel)]="newItemCost" type="number" placeholder="Custo">
+      </div>
+      <br>
+      <button class="btn gold" (click)="saveNewStockItem()">Salvar</button>
+    </div>
+  </div>
+}
+
+<!-- TOAST -->
+@if (toastVisible) {
+  <div class="toast show">{{ toastMessage }}</div>
+}

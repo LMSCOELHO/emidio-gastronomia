@@ -1,0 +1,22 @@
+COMO USAR
+
+1) Extraia o ZIP.
+2) Abra o PowerShell dentro da pasta painel-motoboy-angular-igual.
+3) Rode:
+
+npm install
+ng serve --port 4201
+
+Depois abra:
+http://localhost:4201
+
+Se for colocar no seu projeto Angular atual, copie estes arquivos para src/app:
+
+src/app/app.component.ts
+src/app/app.component.html
+src/app/app.component.css
+
+IMPORTANTE:
+- Rode npm install dentro da pasta onde está o package.json.
+- A pasta correta do Angular é src, não scr.
+- Se a porta 4200 estiver ocupada, use ng serve --port 4201.

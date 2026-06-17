@@ -1,0 +1,41 @@
+<div class="area-cadastro">
+  <div class="logo">
+    <div class="icone">🍴</div>
+    <h1>EMÍDIO</h1>
+    <span>GASTRONOMIA</span>
+  </div>
+
+  <div class="card">
+    <h2>Criar Conta</h2>
+    <p>Preencha os dados para continuar</p>
+
+    <div>
+      <label>Nome Completo</label>
+      <div class="campo">
+        <i>👤</i>
+        <input type="text" [(ngModel)]="nome" placeholder="Seu nome completo" name="nome">
+      </div>
+
+      <label>E-mail</label>
+      <div class="campo">
+        <i>✉</i>
+        <input type="email" [(ngModel)]="email" placeholder="seu@email.com" name="email">
+      </div>
+
+      <label>Senha</label>
+      <div class="campo">
+        <i>🔒</i>
+        <input type="password" [(ngModel)]="senha" placeholder="••••••••" name="senha">
+      </div>
+
+      <button type="button" (click)="cadastrar()">CADASTRAR</button>
+
+      @if (erro) { <div class="erro">{{ erro }}</div> }
+    </div>
+
+    <div class="links">
+      <a routerLink="/login">Já tem conta? Entrar</a>
+      <a href="#" (click)="voltar(); $event.preventDefault()">← Voltar para o site</a>
+    </div>
+  </div>
+</div>

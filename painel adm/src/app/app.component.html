@@ -1,0 +1,587 @@
+<div class="app-shell" [class.owner-mode]="page === 'owner'">
+  <aside class="sidebar" *ngIf="page !== 'owner'">
+    <div class="brand">
+      <div class="brand-mark">🍴</div>
+      <div>
+        <strong>EMÍDIO</strong>
+        <span>Painel Admin</span>
+      </div>
+    </div>
+
+    <div class="store-card">
+      <div class="store-card__head">
+        <small>STATUS DA LOJA</small>
+        <span class="status-pill" [ngClass]="storeStatus.toLowerCase()">● {{ storeStatus }}</span>
+      </div>
+      <div class="status-actions">
+        <button (click)="setStoreStatus('ABERTA')" [class.active]="storeStatus === 'ABERTA'">⏻<span>Abrir</span></button>
+        <button (click)="setStoreStatus('FECHADA')" [class.active]="storeStatus === 'FECHADA'">⌁<span>Fechar</span></button>
+        <button (click)="setStoreStatus('AUTO')" [class.active]="storeStatus === 'AUTO'">◷<span>Auto</span></button>
+      </div>
+    </div>
+
+    <nav class="side-nav">
+      <button *ngFor="let item of sidebarItems" type="button" (click)="setPage(item.page)" [class.active]="page === item.page">
+        <span>{{ item.icon }}</span>{{ item.label }}
+      </button>
+    </nav>
+
+    <div class="user-card">
+      <small>Logado como</small>
+      <strong>Restaurante Emídio Gastr...</strong>
+      <span>adm&#64;gmail.com</span>
+    </div>
+    <button class="logout">↳ Sair</button>
+  </aside>
+
+  <main class="main-content" [class.full-screen]="page === 'owner'">
+    <ng-container [ngSwitch]="page">
+      <section class="dashboard-page" *ngSwitchCase="'dashboard'">
+        <header class="page-header">
+          <div>
+            <p class="eyebrow">Painel Administrativo - Linha</p>
+            <h1>Gastronomia</h1>
+            <span>Visão geral do desempenho do restaurante</span>
+          </div>
+          <div class="date-filter">
+            <strong>Filtro de<br>Vendas:</strong>
+            <label><span>📅</span><input type="date" [(ngModel)]="filterStart"></label>
+            <em>até</em>
+            <label><span>📅</span><input type="date" [(ngModel)]="filterEnd"></label>
+          </div>
+        </header>
+
+        <div class="metrics-grid dashboard-metrics">
+          <article class="metric-card big-icon">
+            <div class="metric-label"><span>▣</span>Pedidos Ativos</div>
+            <strong>{{ activeOrdersCount }}</strong>
+            <small>Em preparação ou entrega</small>
+            <i>▣</i>
+          </article>
+          <article class="metric-card big-icon">
+            <div class="metric-label"><span>$</span>Receita (Filtro)</div>
+            <strong class="gold-text">{{ formatCurrency(filteredRevenue) }}</strong>
+            <small>{{ filteredFinishedOrders }} vendas no período</small>
+            <i>$</i>
+          </article>
+          <article class="metric-card big-icon">
+            <div class="metric-label"><span>◈</span>Total Pedidos (Filtro)</div>
+            <strong>{{ filteredFinishedOrders }}</strong>
+            <small>Finalizados no período</small>
+            <i>⬡</i>
+          </article>
+        </div>
+
+        <div class="module-grid">
+          <button class="module-card" *ngFor="let card of moduleCards" (click)="setPage(card.page)">
+            <div>
+              <strong>{{ card.title }}</strong>
+              <small>{{ card.subtitle }}</small>
+              <span>Acessar →</span>
+            </div>
+            <b [class.blue]="card.accent === 'blue'">{{ card.icon }}</b>
+          </button>
+        </div>
+
+        <section class="panel recent-orders">
+          <div class="panel-title"><span>◷</span><strong>Pedidos Recentes</strong></div>
+          <article class="order-row" *ngFor="let order of filteredOrders; trackBy: trackById" (click)="selectedOrder = order">
+            <div class="order-code">{{ order.id }}</div>
+            <div class="order-info">
+              <strong>{{ order.client }}</strong>
+              <span>{{ order.date | date:'dd/MM/yyyy' }} · {{ order.time }}</span>
+            </div>
+            <div class="order-total">
+              <small>TOTAL</small>
+              <b>{{ formatCurrency(order.total) }}</b>
+            </div>
+            <span class="order-status" [ngClass]="order.status.toLowerCase()">{{ order.status }}</span>
+            <button class="row-arrow" type="button">→</button>
+          </article>
+        </section>
+      </section>
+
+      <section class="owner-page" *ngSwitchCase="'owner'">
+        <header class="owner-header owner-header-fixed">
+          <div class="owner-title">
+            <div class="eye-icon">◎</div>
+            <div>
+              <h1>Olho do Dono</h1>
+              <span>Gestão completa do restaurante</span>
+            </div>
+          </div>
+          <div class="owner-actions">
+            <button class="ghost-back owner-back" (click)="setPage('dashboard')">← Painel</button>
+            <span class="alert-count">⚠ {{ criticalItems.length }} alertas críticos</span>
+            <small>terça-feira, 16 de junho</small>
+          </div>
+        </header>
+
+        <nav class="owner-tabs owner-tabs-fixed">
+          <button *ngFor="let tab of ownerTabs" (click)="setOwnerTab(tab.key)" [class.active]="ownerTab === tab.key">
+            <span>{{ tab.icon }}</span>{{ tab.label }}
+          </button>
+        </nav>
+
+        <ng-container [ngSwitch]="ownerTab">
+          <div class="owner-view" *ngSwitchCase="'overview'">
+            <div class="critical-banner owner-critical">
+              <strong>♨ Itens críticos no estoque:</strong>
+              <span *ngFor="let item of criticalItems">{{ item.name }} ({{ item.quantity }} {{ item.unit }})</span>
+            </div>
+
+            <div class="owner-cards owner-cards-new">
+              <article class="owner-card metric-large"><div class="owner-icon money">$</div><small>Lucro Líquido (6 meses)</small><strong>{{ formatCurrency(profitSixMonths) }}</strong><span>Receita – todos os custos</span><em>↗ 12%</em></article>
+              <article class="owner-card metric-large"><div class="owner-icon purple">◎</div><small>Ponto de Equilíbrio</small><strong>550 pedidos/mês</strong><span>{{ formatCurrency(23540) }}</span></article>
+              <article class="owner-card metric-large"><div class="owner-icon blue">◈</div><small>Valor em Estoque</small><strong>{{ formatCurrency(stockValue) }}</strong><span>{{ stockItems.length + 2 }} itens cadastrados</span></article>
+              <article class="owner-card metric-large"><div class="owner-icon red">⚠</div><small>Alertas de Estoque</small><strong>{{ criticalItems.length + lowItemsCount }}</strong><span>{{ criticalItems.length }} críticos · {{ lowItemsCount }} baixos</span></article>
+              <article class="owner-card metric-large span-2"><div class="owner-icon green">↗</div><small>Margem de Contribuição</small><strong>{{ marginContribution }}%</strong><span>Sobre receita bruta</span><em>↗ 3%</em></article>
+              <article class="owner-card metric-large span-2"><div class="owner-icon money">🛒</div><small>Compras Pendentes</small><strong>{{ formatCurrency(pendingPurchasesTotal) }}</strong><span>{{ purchases.length }} itens para repor</span></article>
+              <article class="owner-card metric-large span-2"><div class="owner-icon red">▣</div><small>Dispensas (mês)</small><strong>{{ formatCurrency(expensesTotal) }}</strong><span>{{ expenses.length }} registros</span><em class="down">↓ 8%</em></article>
+            </div>
+
+            <section class="panel chart-panel owner-chart-full">
+              <div class="panel-title"><strong>Receita vs Custo vs Lucro (6 meses)</strong></div>
+              <svg class="line-chart" viewBox="0 0 540 230" role="img" aria-label="Gráfico de receita e lucro">
+                <line x1="30" y1="190" x2="510" y2="190"></line>
+                <line x1="30" y1="150" x2="510" y2="150"></line>
+                <line x1="30" y1="110" x2="510" y2="110"></line>
+                <line x1="30" y1="70" x2="510" y2="70"></line>
+                <text x="12" y="192">R$0k</text><text x="12" y="152">R$15k</text><text x="12" y="112">R$30k</text><text x="12" y="72">R$45k</text><text x="12" y="32">R$60k</text>
+                <polygon [attr.points]="revenueArea" class="revenue-area"></polygon>
+                <polyline [attr.points]="revenuePolyline" class="revenue-line"></polyline>
+                <polyline [attr.points]="profitPolyline" class="profit-line"></polyline>
+                <g *ngFor="let item of monthlySeries; let i = index"><text [attr.x]="30 + i * 92" y="216">{{ item.month }}</text></g>
+              </svg>
+              <div class="chart-legend"><span class="gold-dot">Receita</span><span class="green-dot">Lucro</span></div>
+            </section>
+
+            <section class="panel donut-panel owner-donut-full">
+              <div class="panel-title"><strong>Distribuição de Custos</strong></div>
+              <div class="donut-wrap donut-wrap-owner">
+                <div class="donut"></div>
+                <div class="donut-legend values">
+                  <span *ngFor="let part of costDistribution"><i></i>{{ part.label }} <b>{{ formatCurrency(part.value) }}</b></span>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'stock'">
+            <div class="inventory-stats">
+              <article><small>Total em Estoque</small><strong>{{ formatCurrency(stockValue) }}</strong></article>
+              <article><small>Itens Críticos</small><strong class="danger-text">{{ criticalItems.length }}</strong></article>
+              <article><small>Itens Baixos</small><strong class="gold-inline">{{ lowItemsCount }}</strong></article>
+              <article><small>Itens OK</small><strong class="green-inline">{{ okItemsCount }}</strong></article>
+            </div>
+
+            <section class="stock-manual-card">
+              <div class="manual-head"><h3>Adicionar item no estoque</h3><p>Cadastre manualmente e depois use + / − para dar entrada ou baixa.</p></div>
+              <div class="stock-form-grid">
+                <input [(ngModel)]="newStockItem.name" placeholder="Nome do item">
+                <input [(ngModel)]="newStockItem.category" placeholder="Categoria">
+                <input [(ngModel)]="newStockItem.supplier" placeholder="Fornecedor">
+                <input type="number" [(ngModel)]="newStockItem.quantity" placeholder="Qtd atual">
+                <select [(ngModel)]="newStockItem.unit"><option>kg</option><option>L</option><option>un</option><option>cx</option><option>pct</option></select>
+                <input type="number" [(ngModel)]="newStockItem.min" placeholder="Mínimo">
+                <input type="number" [(ngModel)]="newStockItem.max" placeholder="Máximo">
+                <input type="number" [(ngModel)]="newStockItem.cost" placeholder="Custo/Un">
+                <button class="gold-button" (click)="saveStockItem()">＋ Salvar item</button>
+              </div>
+            </section>
+
+            <div class="inventory-tools">
+              <label class="search-box">⌕ <input [(ngModel)]="stockSearch" placeholder="Buscar item, categoria, fornecedor..."></label>
+              <div class="filter-pills">
+                <button [class.active]="stockFilter === 'all'" (click)="stockFilter = 'all'">Todos</button>
+                <button [class.active]="stockFilter === 'critical'" (click)="stockFilter = 'critical'"><i class="dot red"></i>Crítico</button>
+                <button [class.active]="stockFilter === 'low'" (click)="stockFilter = 'low'"><i class="dot gold"></i>Baixo</button>
+                <button [class.active]="stockFilter === 'ok'" (click)="stockFilter = 'ok'"><i class="dot green"></i>OK</button>
+              </div>
+            </div>
+            <section class="panel table-panel no-pad">
+              <table class="owner-table stock-table">
+                <thead><tr><th>Item</th><th>Categoria</th><th>Fornecedor</th><th>Estoque Atual</th><th>Entrada / Baixa</th><th>Min / Máx</th><th>Custo/Un</th><th>Ações</th></tr></thead>
+                <tbody>
+                  <tr *ngFor="let item of filteredStockItems; trackBy: trackById">
+                    <td><strong>{{ item.name }}</strong><small>{{ ownerStockStatusLabel(item) }}</small></td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ shortSupplier(item.supplier) }}</td>
+                    <td><b>{{ item.quantity }} {{ item.unit }}</b><div class="stock-meter"><span [class]="stockStatus(item)" [style.width.%]="stockPercent(item)"></span></div></td>
+                    <td>
+                      <div class="stock-qty-controls">
+                        <button type="button" class="qty-down" (click)="adjustStock(item, -1)">−</button>
+                        <input type="number" [step]="stockStep(item)" min="0" [ngModel]="item.quantity" (ngModelChange)="setStockQuantity(item, $event)">
+                        <button type="button" class="qty-up" (click)="adjustStock(item, 1)">+</button>
+                      </div>
+                    </td>
+                    <td>{{ item.min }} / {{ item.max }}</td>
+                    <td>{{ formatCurrency(item.cost) }}</td>
+                    <td><button class="mini-button danger" (click)="removeStockItem(item.id)">Excluir</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'shopping'">
+            <div class="page-mini-header">
+              <div><h2>Lista de Compras</h2><p>Itens abaixo do estoque mínimo que precisam ser repostos</p></div>
+              <article class="total-badge"><span>Total estimado</span><strong>{{ formatCurrency(pendingPurchasesTotal) }}</strong></article>
+            </div>
+            <section class="purchase-list">
+              <article class="purchase-card" *ngFor="let item of visiblePurchases; trackBy: trackById">
+                <div class="purchase-main"><strong><i></i>{{ item.name }}</strong><small>{{ item.category }} · Fornecedor: {{ item.supplier }}</small></div>
+                <div><small>Atual</small><b class="danger-text">{{ item.current }} {{ item.unit }}</b></div>
+                <div><small>Mínimo</small><b class="gold-inline">{{ item.min }} {{ item.unit }}</b></div>
+                <div><small>Comprar</small><b class="green-inline">{{ item.buy }} {{ item.unit }}</b></div>
+                <div><small>Custo/Un</small><b>{{ formatCurrency(item.price) }}</b></div>
+                <div><small>Total</small><b class="gold-inline">{{ formatCurrency(item.total || 0) }}</b></div>
+                <div class="purchase-actions"><button class="mini-button success" (click)="receivePurchase(item)">Dar entrada</button></div>
+              </article>
+              <div class="empty-row" *ngIf="!visiblePurchases.length">Nenhum item crítico na lista. Quando o estoque ficar abaixo do mínimo, ele aparece aqui automaticamente.</div>
+            </section>
+            <div class="low-warning"><span>⚠</span><strong>Atenção — Estoque Baixo (repor em breve)</strong></div>
+            <div class="low-grid"><article *ngFor="let item of shoppingLowItems"><strong>{{ item.name }}</strong><span>{{ item.quantity }} {{ item.unit }} · Min: {{ item.min }}</span></article></div>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'suppliers'">
+            <div class="page-mini-header"><div><h2>Fornecedores</h2><p>{{ supplierActiveCount }} ativos · {{ supplierInactiveCount }} inativos</p></div><button class="gold-button" (click)="showSupplierForm = !showSupplierForm">＋ Novo Fornecedor</button></div>
+            <section class="manual-form-card supplier-form-card" *ngIf="showSupplierForm">
+              <div class="manual-head"><div><h3>Cadastrar fornecedor manualmente</h3><p>Preencha os dados e salve para aparecer na lista imediatamente.</p></div></div>
+              <div class="manual-form-grid supplier-manual-grid">
+                <input [(ngModel)]="newSupplier.name" placeholder="Nome do fornecedor">
+                <input [(ngModel)]="newSupplier.manager" placeholder="Contato / responsável">
+                <input [(ngModel)]="newSupplier.phone" placeholder="Telefone">
+                <input [(ngModel)]="newSupplier.email" placeholder="E-mail">
+                <input class="span-2-input" [(ngModel)]="newSupplier.address" placeholder="Endereço">
+                <input [(ngModel)]="newSupplier.category" placeholder="Categoria principal">
+                <input [(ngModel)]="newSupplier.categoriesText" placeholder="Produtos separados por vírgula">
+                <input [(ngModel)]="newSupplier.payment" placeholder="Pagamento: 15 dias, à vista...">
+                <input type="number" min="0" [(ngModel)]="newSupplier.monthlySpend" placeholder="Gasto/mês">
+                <select [(ngModel)]="newSupplier.score"><option [ngValue]="5">★★★★★</option><option [ngValue]="4">★★★★☆</option><option [ngValue]="3">★★★☆☆</option></select>
+                <select [(ngModel)]="newSupplier.active"><option [ngValue]="true">Ativo</option><option [ngValue]="false">Inativo</option></select>
+                <button class="gold-button" (click)="saveSupplier()">Salvar fornecedor</button>
+              </div>
+            </section>
+            <div class="supplier-list">
+              <article class="supplier-card-xl" *ngFor="let supplier of suppliers; trackBy: trackById" [class.inactive]="!supplier.active">
+                <div class="supplier-head"><div class="truck-icon">▱</div><div><h3>{{ supplier.name }}</h3><p>Contato: {{ supplier.manager }}</p></div><div class="supplier-rate"><span>{{ starString(supplier.score) }}</span><b [class.active]="supplier.active">{{ supplier.active ? 'ativo' : 'inativo' }}</b></div></div>
+                <div class="supplier-info"><span>☎ {{ supplier.phone }}</span><span>✉ {{ supplier.email }}</span><span>⌾ {{ supplier.address }}</span></div>
+                <div class="chips"><span *ngFor="let cat of supplier.categories">{{ cat }}</span></div>
+                <div class="supplier-foot"><span>Pagamento: {{ supplier.payment }}</span><div><small>Gasto/mês</small><strong>{{ formatCurrency(supplier.monthlySpend) }}</strong></div></div>
+                <div class="supplier-actions"><button class="mini-button success" (click)="toggleSupplier(supplier)">{{ supplier.active ? 'Desativar' : 'Ativar' }}</button><button class="mini-button danger" (click)="removeSupplier(supplier.id)">Excluir</button></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'finance'">
+            <section class="finance-section break-even">
+              <h3><span class="owner-icon purple sm">◎</span>Ponto de Equilíbrio</h3>
+              <div class="finance-lines"><p><span>Custos Fixos Mensais</span><strong>{{ formatCurrency(fixedCosts) }}</strong></p><p><span>Custos Variáveis Mensais</span><strong>{{ formatCurrency(variableCosts) }}</strong></p><p><span>Ticket Médio</span><strong>R$ 42,80</strong></p><p><span>Margem de Contribuição</span><strong class="green-inline">36.9%</strong></p></div>
+              <div class="purple-callout"><small>Para cobrir todos os custos, precisa de:</small><strong>550 <span>pedidos/mês</span> ou {{ formatCurrency(23540) }} <span>receita/mês</span></strong></div>
+            </section>
+            <section class="finance-section">
+              <h3><span class="owner-icon money sm">$</span>Lucro Real (Líquido)</h3>
+              <div class="profit-row" *ngFor="let row of financeRows"><span>{{ row.month }}</span><div><i [style.width.%]="barWidth(row.profit, maxValue(financeRows, 'profit'))"></i></div><strong>{{ formatCurrency(row.profit) }}</strong></div>
+              <div class="gold-summary"><div><small>Lucro Acumulado (6 meses)</small><strong>{{ formatCurrency(profitSixMonths) }}</strong></div><div><small>Margem Média</small><strong>42.0%</strong></div></div>
+            </section>
+            <section class="finance-section chart-bars"><h3>Demonstrativo Mensal (R$)</h3><div class="bar-chart"><div class="bar-month" *ngFor="let row of financeRows"><span class="bar revenue" [style.height.%]="barWidth(row.revenue, maxValue(financeRows, 'revenue'))"></span><span class="bar cost" [style.height.%]="barWidth(row.totalCost, maxValue(financeRows, 'revenue'))"></span><span class="bar profit" [style.height.%]="barWidth(row.profit, maxValue(financeRows, 'revenue'))"></span><small>{{ row.month }}</small></div></div><div class="chart-legend"><span class="gold-dot">Receita</span><span class="red-dot">Custo Total</span><span class="green-dot">Lucro Líquido</span></div></section>
+            <section class="finance-section"><h3>Detalhamento de Despesas (Março 2026)</h3><div class="expense-break" *ngFor="let row of expenseBreakdown"><span>{{ row.label }}</span><div><i [class]="row.className" [style.width.%]="row.percent"></i></div><strong>{{ formatCurrency(row.value) }}</strong><small>{{ row.percent }}%</small></div><div class="total-line"><span>Total de Despesas</span><strong>{{ formatCurrency(totalExpensesMonth) }}</strong></div></section>
+            <section class="finance-section payroll-mini"><h3>▥ Folha de Pagamento — Março 2026</h3><div class="payroll-cards"><article><small>Total Salários</small><strong>R$ 10.336,00</strong></article><article><small>FGTS + INSS</small><strong>{{ formatCurrency(1910) }}</strong></article><article><small>Vale Transporte</small><strong>{{ formatCurrency(1034) }}</strong></article><article><small>Custo Total RH</small><strong>{{ formatCurrency(payrollTotal) }}</strong></article></div></section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'expenses'">
+            <div class="page-mini-header"><div><h2>Dispensas & Quebras</h2><p>Registro de perdas, vencimentos e quebras operacionais</p></div><button class="gold-button" (click)="addMockLoss()">＋ Registrar Dispensa</button></div>
+            <section class="manual-form-card expense-form-card" *ngIf="showExpenseForm">
+              <div class="manual-head"><div><h3>Registrar dispensa manualmente</h3><p>Informe item, quantidade, custo, motivo e responsável. Se o item existir no estoque, a quantidade será baixada automaticamente.</p></div></div>
+              <div class="manual-form-grid expense-manual-grid">
+                <input [(ngModel)]="newExpense.description" placeholder="Item dispensado">
+                <input [(ngModel)]="newExpense.quantity" placeholder="Quantidade: 2 kg, 3 un...">
+                <input type="number" min="0" step="0.01" [(ngModel)]="newExpense.value" placeholder="Custo perdido">
+                <select [(ngModel)]="newExpense.reason"><option>Vencimento</option><option>Quebra operacional</option><option>Quebra acidental</option><option>Embalagem danificada</option><option>Qualidade ruim</option><option>Outro</option></select>
+                <input [(ngModel)]="newExpense.responsible" placeholder="Responsável">
+                <input type="date" [(ngModel)]="newExpense.date">
+                <button class="gold-button" (click)="addExpense()">Salvar registro</button>
+              </div>
+            </section>
+            <div class="inventory-stats"><article><small>Total Perdido (mês)</small><strong class="danger-text">{{ formatCurrency(expensesTotal) }}</strong></article><article><small>Vencimentos</small><strong class="gold-inline">3</strong></article><article><small>Quebras</small><strong class="purple-inline">3</strong></article><article><small>Registros (mês)</small><strong class="blue-inline">{{ expenses.length }}</strong></article></div>
+            <section class="panel table-panel no-pad"><table class="owner-table loss-table"><thead><tr><th>Data</th><th>Item</th><th>Quantidade</th><th>Custo</th><th>Motivo</th><th>Responsável</th><th>Ações</th></tr></thead><tbody><tr *ngFor="let row of expenses; trackBy: trackById"><td>{{ row.date | date:'dd/MM/yyyy' }}</td><td><strong>{{ row.description }}</strong></td><td>{{ row.quantity }}</td><td class="danger-text">{{ formatCurrency(row.value) }}</td><td><span class="reason-pill">{{ row.reason }}</span></td><td>{{ row.responsible }}</td><td><button class="mini-button danger" (click)="removeExpense(row.id)">Excluir</button></td></tr></tbody><tfoot><tr><td colspan="6">{{ expenses.length }} registros</td><td>Total: <b class="danger-text">{{ formatCurrency(expensesTotal) }}</b></td></tr></tfoot></table></section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'analytics'">
+            <div class="page-mini-header analytics-head">
+              <div><h2>Analytics de Desempenho</h2><p>Análise detalhada de vendas, pratos, bebidas e pedidos finalizados por data</p></div>
+              <div class="date-filter compact">
+                <label><span>📅</span><input type="date" [(ngModel)]="analyticsStart"></label>
+                <em>até</em>
+                <label><span>📅</span><input type="date" [(ngModel)]="analyticsEnd"></label>
+              </div>
+            </div>
+            <label class="search-box analytics-search">⌕ <input [(ngModel)]="analyticsSearch" placeholder="Pesquisar por cliente, pedido, item, status ou endereço..."></label>
+            <div class="analytics-metrics"><article *ngFor="let item of analyticsSummary" [class]="item.className"><small>{{ item.label }}</small><strong>{{ item.value }}</strong></article></div>
+            <section class="analytics-panel line-wide"><h3>Pedidos por Dia da Semana</h3><svg viewBox="0 0 900 170" class="week-chart"><polyline points="20,125 160,118 300,112 440,92 580,70 720,58 860,86"></polyline><polygon points="20,125 160,118 300,112 440,92 580,70 720,58 860,86 860,150 20,150"></polygon><g *ngFor="let row of weeklyOrders; let i = index"><text [attr.x]="20 + i * 140" y="158">{{ row.day }}</text></g></svg></section>
+            <section class="panel table-panel no-pad analytics-orders-table">
+              <div class="panel-title table-title"><strong>Pedidos feitos no período</strong><small>{{ analyticsCompletedOrders.length }} finalizados · {{ formatCurrency(analyticsRevenue) }}</small></div>
+              <table class="owner-table"><thead><tr><th>Data</th><th>Pedido</th><th>Cliente</th><th>Itens</th><th>Horário</th><th>Total</th><th>Status</th></tr></thead><tbody><tr *ngFor="let order of analyticsCompletedOrders; trackBy: trackById"><td>{{ order.date | date:'dd/MM/yyyy' }}</td><td>{{ order.id }}</td><td><strong>{{ order.client }}</strong><small>{{ order.address }}</small></td><td>{{ order.items.join(', ') }}</td><td>{{ order.time }}</td><td class="green-inline">{{ formatCurrency(order.total) }}</td><td><span class="order-status entregue">{{ order.status }}</span></td></tr></tbody></table>
+              <div class="empty-row" *ngIf="!analyticsCompletedOrders.length">Nenhum pedido finalizado encontrado nessas datas.</div>
+            </section>
+            <div class="analytics-grid"><section class="analytics-panel"><h3>Top 5 Pratos</h3><div class="top-dish" *ngFor="let dish of topDishes; let i = index"><span>{{ i + 1 }}</span><strong>{{ dish.name }}</strong><div><i [style.width.%]="barWidth(dish.orders, maxValue(topDishes, 'orders'))"></i></div><small>{{ dish.orders }} pedidos</small><b>{{ formatCurrency(dish.revenue) }}</b></div></section><section class="analytics-panel"><h3>Mix de Bebidas Vendidas</h3><div class="donut analytics-donut"></div><div class="mini-legend"><span *ngFor="let item of drinkMix">{{ item }}</span></div></section></div>
+            <section class="analytics-panel food-bars"><h3>Receita x Custo x Lucro por Prato</h3><div class="food-chart"><div *ngFor="let row of foodBars"><span class="bar revenue" [style.height.%]="barWidth(row.revenue, maxValue(foodBars, 'revenue'))"></span><span class="bar cost" [style.height.%]="barWidth(row.cost, maxValue(foodBars, 'revenue'))"></span><span class="bar profit" [style.height.%]="barWidth(row.profit, maxValue(foodBars, 'revenue'))"></span><small>{{ row.name }}</small></div></div></section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'employees'">
+            <div class="page-mini-header"><div><h2>Gestão de Funcionários</h2><p>{{ employees.length }} ativos · folha mensal {{ formatCurrency(payrollTotal) }}</p></div></div>
+            <div class="employee-summary"><article><small>Funcionários</small><strong>{{ employees.length }}</strong></article><article><small>Salário médio</small><strong class="green-inline">{{ formatCurrency(salaryAverage) }}</strong></article><article><small>Total encargos</small><strong class="gold-inline">{{ formatCurrency(payrollCharges) }}</strong></article><article><small>Custo total RH</small><strong class="danger-text">{{ formatCurrency(payrollTotal) }}</strong></article></div>
+            <div class="employee-grid"><article class="employee-card" *ngFor="let emp of employees; trackBy: trackById"><div class="emp-head"><span>{{ emp.avatar }}</span><div><strong>{{ emp.name }}</strong><small>{{ emp.role }}</small></div><b>{{ emp.status }}</b></div><div class="emp-money"><div><strong>{{ formatCurrency(emp.salary) }}</strong><small>Salário</small></div><div><strong>{{ formatCurrency(emp.charges) }}</strong><small>Encargos</small></div><div><strong>{{ formatCurrency(emp.total) }}</strong><small>Total</small></div></div><div class="emp-foot"><span>◷ {{ emp.shift }}</span><small>Admissão: {{ emp.admission }}</small></div></article></div>
+            <section class="finance-section services"><h3>🔧 Serviços & Terceiros <span>Pendente: {{ formatCurrency(570) }}</span></h3><div class="service-row" *ngFor="let service of serviceRows"><div><b>{{ service.type }}</b><strong>{{ service.title }}</strong><small>{{ service.supplier }} · {{ service.due }}</small></div><span>{{ formatCurrency(service.value) }}</span><em>{{ service.status }}</em></div></section>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'freelance'">
+            <div class="page-mini-header"><div><h2>Cadastro de Freelancers</h2><p>{{ freelancers.length }} pessoas cadastradas</p></div><button class="gold-button">⌁ Novo Freelancer</button></div>
+            <div class="freelance-stats"><article><small>Ativos</small><strong>{{ activeFreelancers }}</strong></article><article><small>Pendentes</small><strong>{{ pendingFreelancers }}</strong></article><article><small>Contratação média</small><strong>{{ formatCurrency(freelancerAverageRate) }}</strong></article><article><small>Total cadastros</small><strong>{{ freelancers.length }}</strong></article></div>
+            <div class="inventory-tools"><label class="search-box">⌕ <input [(ngModel)]="freelancerSearch" placeholder="Buscar por nome, função ou e-mail..."></label><div class="filter-pills"><button [class.active]="freelancerFilter === 'all'" (click)="freelancerFilter = 'all'">Todos</button><button [class.active]="freelancerFilter === 'ativo'" (click)="freelancerFilter = 'ativo'">Ativo</button><button [class.active]="freelancerFilter === 'inativo'" (click)="freelancerFilter = 'inativo'">Inativo</button><button [class.active]="freelancerFilter === 'pendente'" (click)="freelancerFilter = 'pendente'">Pendente</button></div></div>
+            <div class="freelancer-list"><article class="freelancer-card" *ngFor="let person of filteredFreelancers"><div class="free-avatar">{{ person.avatar }}</div><div class="free-main"><h3>{{ person.name }} <span [class.inactive]="person.status !== 'ativo'">{{ person.status }}</span></h3><strong>{{ person.role }}</strong><p>☎ {{ person.phone }} &nbsp; ✉ {{ person.email }} &nbsp; ▣ {{ person.document }} &nbsp; Desde {{ person.since }}</p><small>▦ {{ person.city }} &nbsp; ⚑ PIX: {{ person.pix }} &nbsp; ▣ {{ person.specialty }}</small></div><div class="free-rate"><strong>{{ formatCurrency(person.rate) }}</strong><small>por diária</small><button (click)="toggleFreelancer(person)">{{ person.status === 'ativo' ? 'Desativar' : 'Ativar' }}</button></div></article></div>
+          </div>
+
+          <div class="owner-view" *ngSwitchCase="'point'">
+            <div class="page-mini-header"><div><h2>Controle de Ponto</h2><p>Registro de entrada e saída dos funcionários — terça-feira, 16 de junho</p></div><button class="green-button">● Ao Vivo</button></div>
+            <div class="point-grid"><article class="point-card" *ngFor="let person of pointCards" [class]="person.accent"><div class="point-head"><span>{{ person.avatar }}</span><div><strong>{{ person.name }}</strong><small>{{ person.role }}</small></div><b>{{ person.status }}</b></div><div class="point-times"><div><small>↪ Entrada</small><strong>{{ person.entry }}</strong><em>Prev: {{ person.planned.split('–')[0] }}</em></div><div><small>↩ Saída</small><strong>{{ person.exit }}</strong><em>Prev: {{ person.planned.split('–')[1] }}</em></div></div><button [class.done]="person.action === 'completed'" (click)="togglePoint(person)">{{ person.action === 'entry' ? '↪ Registrar Entrada' : person.action === 'exit' ? '↩ Registrar Saída' : '✓ Concluído' }}</button></article></div>
+            <div class="inventory-tools point-tools"><div class="filter-pills"><button class="active">Hoje</button><button>Semana</button></div><label class="search-box">⌕ <input placeholder="Buscar funcionário..."></label></div>
+            <section class="panel table-panel no-pad"><div class="panel-title point-title"><strong>▣ Histórico de Registros</strong><small>{{ pointHistory.length }} registros</small></div><table class="owner-table"><thead><tr><th>Data</th><th>Funcionário</th><th>Entrada</th><th>Saída</th><th>Horas</th><th>Status</th></tr></thead><tbody><tr *ngFor="let row of pointHistory"><td>{{ row.date }}</td><td><strong>{{ row.name }}</strong></td><td>{{ row.entry }}</td><td class="green-inline">{{ row.exit }}</td><td>{{ row.hours }}</td><td><span class="point-status">{{ row.status }}</span></td></tr></tbody></table></section>
+          </div>
+        </ng-container>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'menu'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Gerenciar Cardápio</h1><span>Cadastro manual de pratos, bebidas e sobremesas</span></div></header>
+        <section class="manual-form-card">
+          <div class="manual-head"><h3>Cadastrar prato manualmente</h3><p>Preencha os dados e clique em salvar. O cadastro fica salvo no navegador.</p></div>
+          <div class="manual-form-grid menu-manual-grid">
+            <input placeholder="Nome do prato" [(ngModel)]="newDish.name">
+            <select [(ngModel)]="newDish.category"><option>Principal</option><option>Bebidas</option><option>Sobremesas</option><option>Entradas</option><option>Combos</option></select>
+            <input type="number" placeholder="Preço" [(ngModel)]="newDish.price">
+            <input type="number" placeholder="Tempo preparo (min)" [(ngModel)]="newDish.prepTime">
+            <textarea placeholder="Descrição do prato" [(ngModel)]="newDish.description"></textarea>
+            <textarea placeholder="Ingredientes principais" [(ngModel)]="newDish.ingredients"></textarea>
+            <label class="switch-label"><input type="checkbox" [(ngModel)]="newDish.active"> Ativo no cardápio</label>
+            <button class="gold-button" (click)="saveDish()">＋ Salvar prato</button>
+          </div>
+        </section>
+        <section class="panel"><table class="data-table"><thead><tr><th>Prato</th><th>Categoria</th><th>Preço</th><th>Tempo</th><th>Descrição</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr *ngFor="let dish of dishes; trackBy: trackById"><td><strong>{{ dish.name }}</strong><small>{{ dish.ingredients || 'Sem ingredientes cadastrados' }}</small></td><td>{{ dish.category }}</td><td>{{ formatCurrency(dish.price) }}</td><td>{{ dish.prepTime || 0 }} min</td><td>{{ dish.description || '—' }}</td><td><span class="order-status" [class.pronto]="dish.active" [class.cancelado]="!dish.active">{{ dish.active ? 'ATIVO' : 'INATIVO' }}</span></td><td><button class="mini-button" (click)="selectDish(dish)">Editar</button><button class="mini-button danger" (click)="removeDish(dish.id)">Excluir</button><button class="mini-button" (click)="toggleDish(dish)">{{ dish.active ? 'Pausar' : 'Ativar' }}</button></td></tr></tbody></table></section>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'kitchen'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Cozinha & Pedidos</h1><span>Fila de preparação em tempo real</span></div><button class="gold-button" (click)="kitchenQueueVisible = !kitchenQueueVisible">{{ kitchenQueueVisible ? 'Ocultar fila' : 'Mostrar fila' }}</button></header>
+        <div class="kitchen-board" *ngIf="kitchenQueueVisible"><article class="kitchen-ticket" *ngFor="let order of activeOrders"><div><strong>{{ order.id }}</strong><span>{{ order.client }} · {{ order.time }}</span></div><ul><li *ngFor="let item of order.items">{{ item }}</li></ul><button class="gold-button" (click)="toggleOrderStatus(order)">{{ order.status === 'PREPARANDO' ? 'Marcar pronto' : 'Enviar entrega' }}</button></article></div>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'gps'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Simulador GPS</h1><span>Rastreamento de entregadores</span></div></header>
+        <div class="gps-layout"><div class="fake-map"><span class="pin one">⌖</span><span class="pin two">⌖</span><span class="pin three">⌖</span><b>Mapa de rotas</b></div><div class="route-list"><article><strong>Lucas Rocha</strong><span>Pedido #-003 · 7 min até o cliente</span></article><article><strong>Rafael Souza</strong><span>Pedido #-002 · aguardando cozinha</span></article></div></div>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'orders'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Controle de Pedidos</h1><span>Todos os pedidos da operação</span></div></header>
+        <section class="panel"><table class="data-table"><thead><tr><th>Código</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr *ngFor="let order of orders; trackBy: trackById"><td>{{ order.id }}</td><td><strong>{{ order.client }}</strong><small>{{ order.address }}</small></td><td>{{ order.items.join(', ') }}</td><td>{{ formatCurrency(order.total) }}</td><td><span class="order-status" [ngClass]="order.status.toLowerCase()">{{ order.status }}</span></td><td><button class="mini-button" (click)="toggleOrderStatus(order)">Avançar</button><button class="mini-button danger" (click)="cancelOrder(order)">Cancelar</button></td></tr></tbody></table></section>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'delivery'">
+        <header class="tool-header">
+          <button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button>
+          <div>
+            <h1>Painel Motoboy</h1>
+            <span>Login do entregador, entregas disponíveis e rastreador GPS</span>
+          </div>
+        </header>
+
+        <div class="driver-shell" *ngIf="!deliveryLoggedIn">
+          <div class="driver-login-card">
+            <div class="driver-login-icon">🏍️</div>
+            <h2>Entregador</h2>
+            <p>Selecione seu perfil para entrar</p>
+
+            <button class="driver-profile-option" *ngFor="let profile of deliveryProfiles" (click)="enterDelivery(profile)">
+              <span class="driver-profile-left">
+                <span class="driver-avatar" [style.background]="profile.color || '#555'">{{ profile.avatar }}</span>
+                <span>
+                  <strong>{{ profile.name }}</strong>
+                  <small>⭐ {{ profile.rating }} · {{ profile.deliveries }} entregas</small>
+                </span>
+              </span>
+              <span class="driver-arrow">›</span>
+            </button>
+
+            <button class="driver-back-button" (click)="setPage('dashboard')">Voltar ao painel</button>
+          </div>
+        </div>
+
+        <div class="driver-panel" *ngIf="deliveryLoggedIn">
+          <header class="driver-header">
+            <div class="driver-header-left">
+              <div class="driver-header-avatar" [style.background]="deliveryProfile?.color || '#555'">{{ deliveryProfile?.avatar }}</div>
+              <div>
+                <strong>Olá, {{ deliveryFirstName }}!</strong>
+                <small>⭐ {{ deliveryProfile?.rating }} · {{ deliveryFinishedToday }} entregas</small>
+              </div>
+            </div>
+            <div class="driver-header-right">
+              <button class="driver-exit" (click)="exitDelivery()">↩</button>
+              <button class="driver-toggle" [class.online]="deliveryOnline" (click)="toggleDeliveryStatus()">
+                <span></span>{{ deliveryOnline ? 'Online' : 'Offline' }}
+              </button>
+            </div>
+          </header>
+
+          <div class="driver-stats">
+            <article><strong>{{ formatCurrency(deliveryEarnings) }}</strong><span>Hoje</span></article>
+            <article><strong>{{ deliveryFinishedToday }}</strong><span>Entregas</span></article>
+            <article class="driver-gps-stat" (click)="activateDeliveryGps()"><strong>{{ deliveryGpsActive ? '📍 GPS Ativo' : '📍 GPS Ativar' }}</strong><span>Localização</span></article>
+          </div>
+
+          <nav class="driver-tabs">
+            <button [class.active]="deliveryTab === 'disponiveis'" (click)="setDeliveryTab('disponiveis')">📦 Disponíveis ({{ deliveryAvailableCount }})</button>
+            <button [class.active]="deliveryTab === 'rastreador'" (click)="setDeliveryTab('rastreador')">🗺️ Rastreador</button>
+            <button [class.active]="deliveryTab === 'ativas'" (click)="setDeliveryTab('ativas')">🛵 Ativas ({{ activeDelivery ? 1 : 0 }})</button>
+            <button [class.active]="deliveryTab === 'historico'" (click)="setDeliveryTab('historico')">📋 Histórico</button>
+          </nav>
+
+          <section class="driver-content" [ngSwitch]="deliveryTab">
+            <div *ngSwitchCase="'disponiveis'">
+              <div class="driver-offline-banner" *ngIf="!deliveryOnline">
+                <span>⚠️</span>
+                <div><strong>Você está offline</strong><small>Ative o status para receber pedidos e aparecer no rastreador</small></div>
+              </div>
+
+              <div class="driver-section-title"><span>🔥</span> Alta prioridade</div>
+              <article class="driver-order-card" *ngFor="let job of deliveryJobs">
+                <div class="driver-order-top">
+                  <div><strong>{{ job.client }}</strong><small>Pedido #{{ job.id }}</small></div>
+                  <div class="driver-order-price"><b>{{ formatCurrency(job.price) }}</b><small>{{ job.distance }} · {{ job.eta }}</small></div>
+                </div>
+                <div class="driver-route-row"><span class="origin"></span><div><small>Retirar em</small><b>{{ job.pickup }}</b></div></div>
+                <div class="driver-route-row"><span class="destination"></span><div><small>Entregar em</small><b>{{ job.destination }}</b></div></div>
+                <div class="driver-map-buttons">
+                  <button (click)="openMaps(job.lat, job.lng)">🗺️ Maps</button>
+                  <button (click)="openWaze(job.lat, job.lng)">✈️ Waze</button>
+                </div>
+                <div class="driver-action-buttons">
+                  <button (click)="openDeliveryRoute(job)">🗺️ Ver Rota</button>
+                  <button class="danger" (click)="declineDelivery(job)">✕</button>
+                  <button class="accept" (click)="acceptDelivery(job)">✓ Aceitar</button>
+                </div>
+              </article>
+              <div class="driver-empty" *ngIf="!deliveryJobs.length"><span>📦</span><p>Nenhum pedido disponível no momento</p></div>
+            </div>
+
+            <div *ngSwitchCase="'rastreador'" class="driver-location">
+              <h3>📍 Sua localização em tempo real</h3>
+              <p><b>Status:</b> <span [class.ok]="deliveryGpsActive">{{ deliveryGpsStatus }}</span></p>
+              <p><b>Coordenadas:</b> <code>{{ deliveryGpsCoords }}</code></p>
+              <p><b>Precisão:</b> {{ deliveryGpsAccuracy }}</p>
+              <p><b>Última atualização:</b> {{ deliveryGpsTime }}</p>
+              <div class="driver-fake-map"><i></i><span>🏍️</span></div>
+              <button class="driver-main-button" (click)="activateDeliveryGps()">📍 Ativar / Atualizar GPS</button>
+            </div>
+
+            <div *ngSwitchCase="'ativas'">
+              <article class="driver-order-card" *ngIf="activeDelivery; else noActiveDelivery">
+                <span class="driver-active-badge">EM ANDAMENTO</span>
+                <div class="driver-order-top">
+                  <div><strong>{{ activeDelivery.client }}</strong><small>Pedido #{{ activeDelivery.id }} · aceito às {{ activeDelivery.acceptedAt }}</small></div>
+                  <div class="driver-order-price"><b>{{ formatCurrency(activeDelivery.price) }}</b></div>
+                </div>
+                <div class="driver-route-row"><span class="destination"></span><div><small>Indo para</small><b>{{ activeDelivery.destination }}</b></div></div>
+                <button class="driver-main-button green" (click)="finishDelivery()">✅ Confirmar Entrega</button>
+              </article>
+              <ng-template #noActiveDelivery><div class="driver-empty"><span>🛵</span><p>Nenhuma entrega ativa no momento</p></div></ng-template>
+            </div>
+
+            <div *ngSwitchCase="'historico'" class="driver-history">
+              <article *ngFor="let item of deliveryHistory">
+                <div><strong>{{ item.client }}</strong><small>{{ item.when }}</small></div>
+                <b>{{ formatCurrency(item.price) }}</b>
+              </article>
+            </div>
+          </section>
+
+          <div class="driver-toast" *ngIf="deliveryToast">{{ deliveryToast }}</div>
+        </div>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'clients'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Clientes</h1><span>Cadastro de usuários, telefone, endereço e histórico</span></div></header>
+        <section class="manual-form-card client-form-card">
+          <div class="manual-head"><h3>Salvar novo usuário</h3><p>Cadastre nome, número, endereço e observações. Os dados ficam salvos no navegador.</p></div>
+          <div class="manual-form-grid client-manual-grid">
+            <input placeholder="Nome do cliente" [(ngModel)]="newClient.name">
+            <input placeholder="Número / WhatsApp" [(ngModel)]="newClient.phone">
+            <input placeholder="E-mail" [(ngModel)]="newClient.email">
+            <input placeholder="Bairro" [(ngModel)]="newClient.neighborhood">
+            <input class="span-2-input" placeholder="Endereço completo" [(ngModel)]="newClient.address">
+            <textarea placeholder="Observações do cliente" [(ngModel)]="newClient.notes"></textarea>
+            <button class="gold-button" (click)="saveClient()">＋ Salvar usuário</button>
+          </div>
+        </section>
+
+        <div class="analytics-cards client-stats"><article><small>Clientes salvos</small><strong>{{ clients.length }}</strong></article><article><small>Pedidos entregues</small><strong>{{ completedOrders.length }}</strong></article><article><small>Total em clientes</small><strong>{{ formatCurrency(analyticsRevenue || 0) }}</strong></article><article><small>Busca atual</small><strong>{{ filteredClients.length }}</strong></article></div>
+        <label class="search-box client-search">⌕ <input [(ngModel)]="clientSearch" placeholder="Buscar por nome, número, bairro, e-mail ou endereço..."></label>
+        <div class="client-grid rich">
+          <article *ngFor="let client of filteredClients; trackBy: trackById">
+            <div class="client-card-head"><span>{{ clientInitials(client.name) }}</span><div><strong>{{ client.name }}</strong><small>{{ client.neighborhood || 'Sem bairro' }}</small></div></div>
+            <p>☎ {{ client.phone }}<br>✉ {{ client.email || 'sem e-mail' }}<br>⌂ {{ client.address || 'sem endereço' }}</p>
+            <div class="client-meta"><span>Último: {{ client.lastOrder === 'Sem pedidos' ? client.lastOrder : (client.lastOrder | date:'dd/MM/yyyy') }}</span><b>{{ formatCurrency(client.totalSpent) }}</b></div>
+            <small class="client-notes">{{ client.notes || 'Sem observações' }}</small>
+            <button class="mini-button danger" (click)="removeClient(client.id)">Excluir</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="tool-page" *ngSwitchCase="'analytics'">
+        <header class="tool-header"><button class="ghost-back" (click)="setPage('dashboard')">← Voltar</button><div><h1>Analytics</h1><span>Pedidos feitos, filtros por data e indicadores de performance</span></div></header>
+        <div class="analytics-filter-card">
+          <div class="date-filter compact"><strong>Pesquisar por<br>datas:</strong><label><span>📅</span><input type="date" [(ngModel)]="analyticsStart"></label><em>até</em><label><span>📅</span><input type="date" [(ngModel)]="analyticsEnd"></label></div>
+          <label class="search-box">⌕ <input [(ngModel)]="analyticsSearch" placeholder="Pesquisar pedido, cliente, item, status ou endereço..."></label>
+        </div>
+        <div class="analytics-cards"><article *ngFor="let item of analyticsSummary" [class]="item.className"><small>{{ item.label }}</small><strong>{{ item.value }}</strong></article></div>
+        <section class="panel table-panel no-pad analytics-orders-table">
+          <div class="panel-title table-title"><strong>Tabela de pedidos feitos</strong><small>{{ analyticsCompletedOrders.length }} finalizados no período</small></div>
+          <table class="data-table"><thead><tr><th>Data</th><th>Pedido</th><th>Cliente</th><th>Itens</th><th>Endereço</th><th>Total</th><th>Status</th></tr></thead><tbody><tr *ngFor="let order of analyticsCompletedOrders; trackBy: trackById"><td>{{ order.date | date:'dd/MM/yyyy' }}<small>{{ order.time }}</small></td><td>{{ order.id }}</td><td><strong>{{ order.client }}</strong></td><td>{{ order.items.join(', ') }}</td><td>{{ order.address }}</td><td class="green-inline">{{ formatCurrency(order.total) }}</td><td><span class="order-status entregue">{{ order.status }}</span></td></tr></tbody></table>
+          <div class="empty-row" *ngIf="!analyticsCompletedOrders.length">Nenhum pedido finalizado encontrado nessas datas.</div>
+        </section>
+        <section class="panel table-panel no-pad analytics-orders-table">
+          <div class="panel-title table-title"><strong>Todos os pedidos encontrados</strong><small>{{ analyticsFilteredOrders.length }} registros</small></div>
+          <table class="data-table"><thead><tr><th>Data</th><th>Pedido</th><th>Cliente</th><th>Total</th><th>Status</th><th>Ações</th></tr></thead><tbody><tr *ngFor="let order of analyticsFilteredOrders; trackBy: trackById"><td>{{ order.date | date:'dd/MM/yyyy' }}</td><td>{{ order.id }}</td><td><strong>{{ order.client }}</strong></td><td>{{ formatCurrency(order.total) }}</td><td><span class="order-status" [ngClass]="order.status.toLowerCase()">{{ order.status }}</span></td><td><button class="mini-button" (click)="selectedOrder = order">Ver</button></td></tr></tbody></table>
+        </section>
+      </section>
+    </ng-container>
+  </main>
+</div>
+
+<div class="live-toast" *ngIf="livePreview">⟳ Pré-visualização ao vivo em carregamento, as interações podem não ser salvas</div>
+
+<div class="modal-backdrop" *ngIf="selectedOrder" (click)="selectedOrder = null">
+  <section class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="selectedOrder = null">×</button>
+    <h2>{{ selectedOrder.id }} · {{ selectedOrder.client }}</h2>
+    <p>{{ selectedOrder.address }}</p>
+    <ul><li *ngFor="let item of selectedOrder.items">{{ item }}</li></ul>
+    <div class="modal-total"><span>Total</span><strong>{{ formatCurrency(selectedOrder.total) }}</strong></div>
+    <button class="gold-button" (click)="toggleOrderStatus(selectedOrder)">Avançar status</button>
+  </section>
+</div>
+
+<div class="modal-backdrop" *ngIf="selectedDish" (click)="selectedDish = null">
+  <section class="modal-card" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="selectedDish = null">×</button>
+    <h2>Editar prato</h2>
+    <input [(ngModel)]="selectedDish.name" placeholder="Nome">
+    <select [(ngModel)]="selectedDish.category"><option>Principal</option><option>Bebidas</option><option>Sobremesas</option><option>Entradas</option></select>
+    <input type="number" [(ngModel)]="selectedDish.price" placeholder="Preço">
+    <input type="number" [(ngModel)]="selectedDish.prepTime" placeholder="Tempo de preparo (min)">
+    <textarea [(ngModel)]="selectedDish.description" placeholder="Descrição"></textarea>
+    <textarea [(ngModel)]="selectedDish.ingredients" placeholder="Ingredientes"></textarea>
+    <label class="switch-label"><input type="checkbox" [(ngModel)]="selectedDish.active"> Ativo no cardápio</label>
+    <button class="gold-button" (click)="saveDish()">Salvar alterações</button>
+  </section>
+</div>

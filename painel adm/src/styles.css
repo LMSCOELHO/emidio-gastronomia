@@ -1,0 +1,12 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #070707;
+  color: #f6f7fb;
+  overflow-x: hidden;
+}
+button, input, select { font-family: inherit; }
+button { cursor: pointer; }
+::selection { background: rgba(231, 191, 45, .35); }

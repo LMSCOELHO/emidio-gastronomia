@@ -1,0 +1,209 @@
+<!-- TELA DE LOGIN -->
+<div class="login-screen" id="telaLogin" [style.display]="perfilLogado ? 'none' : 'flex'">
+  <div class="login-card">
+    <div class="login-icon">🏍️</div>
+    <div class="login-title">Entregador</div>
+    <div class="login-subtitle">Selecione seu perfil para entrar</div>
+
+    <div class="profile-option" (click)="entrar('Carlos Silva', '4.8', 342)">
+      <div class="profile-left">
+        <div class="profile-avatar">CS</div>
+        <div>
+          <div class="profile-name">Carlos Silva</div>
+          <div class="profile-meta">⭐ 4.8 · 342 entregas</div>
+        </div>
+      </div>
+      <div class="profile-arrow">›</div>
+    </div>
+
+    <div class="profile-option" (click)="entrar('Maria Santos', '4.9', 518, '#c0392b')">
+      <div class="profile-left">
+        <div class="profile-avatar" style="background:#c0392b">MS</div>
+        <div>
+          <div class="profile-name">Maria Santos</div>
+          <div class="profile-meta">⭐ 4.9 · 518 entregas</div>
+        </div>
+      </div>
+      <div class="profile-arrow">›</div>
+    </div>
+
+    <button class="btn-voltar" (click)="voltarCardapio()">Voltar ao Cardápio</button>
+  </div>
+</div>
+
+<!-- PAINEL PRINCIPAL -->
+<div class="painel" id="painelPrincipal" [class.ativo]="perfilLogado">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-avatar" id="headerAvatar">{{ headerAvatar }}</div>
+      <div class="header-info">
+        <div class="header-name" id="headerNome">{{ headerNome }}</div>
+        <div class="header-rating" id="headerRating">{{ headerRating }}</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-sair" (click)="sair()">↩</button>
+      <div class="toggle-wrap">
+        <div class="status-dot" id="statusDot" [class.online]="online" [class.offline]="!online"></div>
+        <label class="toggle">
+          <input type="checkbox" id="toggleOnline" [checked]="online" (change)="toggleStatus($event)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value" id="statGanhos">{{ ganhosTexto }}</div>
+      <div class="stat-label">Hoje</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value" id="statEntregas">{{ entregasTotal }}</div>
+      <div class="stat-label">Entregas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-gps" id="statGps" [class.off]="!gpsAtivo" (click)="ativarGPS()">📍 {{ gpsAtivo ? 'GPS Ativo' : 'GPS Ativar' }}</div>
+      <div class="stat-label">Localização</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab" [class.ativo]="tabAtual === 'disponiveis'" (click)="mudarTab('disponiveis')">📦 Disponíveis ({{ pedidosDisponiveis.length }})</button>
+    <button class="tab" [class.ativo]="tabAtual === 'rastreador'" (click)="mudarTab('rastreador')">🗺️ Rastreador</button>
+    <button class="tab" [class.ativo]="tabAtual === 'ativas'" (click)="mudarTab('ativas')">🛵 Ativas ({{ pedidoAtivo ? 1 : 0 }})</button>
+    <button class="tab" [class.ativo]="tabAtual === 'historico'" (click)="mudarTab('historico')">📋 Histórico</button>
+  </div>
+
+  <!-- CONTEÚDO -->
+  <div id="conteudo" style="flex:1; overflow-y:auto; padding-bottom:20px;">
+
+    <!-- DISPONÍVEIS -->
+    <div id="tab-disponiveis" [style.display]="tabAtual === 'disponiveis' ? 'block' : 'none'">
+      <div class="offline-banner" id="offlineBanner" [style.display]="online ? 'none' : 'flex'">
+        <div class="icon">⚠️</div>
+        <div>
+          <div class="offline-title">Você está offline</div>
+          <div class="offline-sub">Ative o status para receber pedidos e aparecer no rastreador</div>
+        </div>
+      </div>
+
+      <div class="secao">
+        <div class="secao-header">
+          <span class="fire">🔥</span> ALTA PRIORIDADE
+        </div>
+
+        <div class="card-pedido" *ngFor="let pedido of pedidosDisponiveis" [id]="pedido.cardId" [class.retirando]="pedido.recusando">
+          <div class="card-top">
+            <div>
+              <div class="pedido-nome">{{ pedido.cliente }}</div>
+              <div class="pedido-num">Pedido #{{ pedido.id }}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="pedido-preco">{{ pedido.precoTexto }}</div>
+              <div class="pedido-dist">{{ pedido.distancia }} · {{ pedido.tempo }}</div>
+            </div>
+          </div>
+          <div class="rota-item">
+            <div class="rota-dot origem"></div>
+            <div>
+              <div class="rota-label">Retirar em</div>
+              <div class="rota-end">{{ pedido.origem }}</div>
+            </div>
+          </div>
+          <div class="rota-item">
+            <div class="rota-dot destino"></div>
+            <div>
+              <div class="rota-label">Entregar em</div>
+              <div class="rota-end">{{ pedido.destino }}</div>
+            </div>
+          </div>
+          <div class="card-btns">
+            <button class="btn-map" (click)="abrirMaps(pedido.lat, pedido.lng)">🗺️ Maps</button>
+            <button class="btn-waze" (click)="abrirWaze(pedido.lat, pedido.lng)">✈️ Waze</button>
+          </div>
+          <div class="card-btns-3">
+            <button class="btn-rota" (click)="verRota(pedido)">🗺️ Ver Rota</button>
+            <button class="btn-recusar" (click)="recusarPedido(pedido)">✕</button>
+            <button class="btn-aceitar" (click)="aceitarPedido(pedido)">✓ Aceitar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RASTREADOR (GPS/LOC) -->
+    <div id="tab-rastreador" [style.display]="tabAtual === 'rastreador' ? 'block' : 'none'">
+      <div class="loc-card">
+        <div class="loc-title">📍 Sua Localização em Tempo Real</div>
+        <div class="loc-info">
+          <div><b>Status:</b> <span id="gpsStatus" [style.color]="gpsAtivo ? '#4caf50' : gpsStatus.startsWith('Erro') ? '#f44336' : gpsStatus === 'Obtendo localização...' ? '#f5b642' : '#888'">{{ gpsStatus }}</span></div>
+          <div style="margin-top:6px"><b>Coordenadas:</b> <span class="loc-coords" id="gpsCoords">{{ gpsCoords }}</span></div>
+          <div style="margin-top:4px"><b>Precisão:</b> <span id="gpsPrecisao" style="color:#aaa">{{ gpsPrecisao }}</span></div>
+          <div style="margin-top:4px"><b>Última atualização:</b> <span id="gpsHora" style="color:#aaa">{{ gpsHora }}</span></div>
+        </div>
+        <div class="loc-map" id="locMap">
+          <div class="loc-map-grid"></div>
+          <div class="loc-circle"></div>
+          <div class="loc-pin" id="locPin" [style.transform]="pinAnimando ? 'translate(-50%, -120%)' : 'translate(-50%, -100%)'">🏍️</div>
+        </div>
+        <div class="loc-status" id="locStatus">{{ locStatus }}</div>
+      </div>
+      <div style="margin:0 12px">
+        <button (click)="ativarGPS()" style="width:100%;padding:13px;background:#f5b642;color:#111;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">
+          📍 Ativar / Atualizar GPS
+        </button>
+      </div>
+    </div>
+
+    <!-- ATIVAS -->
+    <div id="tab-ativas" [style.display]="tabAtual === 'ativas' ? 'block' : 'none'">
+      <div id="ativasContent">
+        <div class="empty" *ngIf="!pedidoAtivo">
+          <div class="empty-icon">🛵</div>
+          <div class="empty-text">Nenhuma entrega ativa no momento</div>
+        </div>
+
+        <div style="padding:12px" *ngIf="pedidoAtivo as ativo">
+          <div class="card-pedido">
+            <div class="ativo-badge">EM ANDAMENTO</div>
+            <div class="card-top">
+              <div>
+                <div class="pedido-nome">{{ ativo.cliente }}</div>
+                <div class="pedido-num">Em entrega</div>
+              </div>
+              <div class="pedido-preco">{{ ativo.precoTexto }}</div>
+            </div>
+            <div class="rota-item">
+              <div class="rota-dot destino"></div>
+              <div>
+                <div class="rota-label">Indo para</div>
+                <div class="rota-end">Endereço do cliente</div>
+              </div>
+            </div>
+            <button class="btn-entregar" (click)="finalizarEntrega(ativo.precoTexto)">✅ Confirmar Entrega</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <div id="tab-historico" [style.display]="tabAtual === 'historico' ? 'block' : 'none'">
+      <div style="padding:12px">
+        <div class="hist-item" *ngFor="let item of historico">
+          <div>
+            <div class="hist-nome">{{ item.nome }}</div>
+            <div class="hist-data">{{ item.data }} · Pedido #{{ item.pedido }}</div>
+          </div>
+          <div class="hist-preco">{{ item.precoTexto }}</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" [class.show]="toastVisivel">{{ toastMensagem }}</div>

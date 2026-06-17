@@ -1,0 +1,413 @@
+<div class="cardapio-page">
+  <header>
+    <div class="brand-area">
+      <div
+        class="area-avatar"
+        *ngIf="emailLogado"
+        (click)="abrirPerfil()"
+      >
+        <img [src]="fotoUsuario" alt="Foto do usuário">
+      </div>
+
+      <div class="logo">
+        🍽️ EMÍDIO
+        <span>
+          {{ usuario.nome || 'Cliente' }} • {{ usuario.pedidos || 0 }} pedidos
+        </span>
+        <small *ngIf="usuario.pedidos >= 10">🎁 Cupom 15% OFF</small>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="voltar" type="button" (click)="voltar()">← Voltar</button>
+      <button class="carrinho" type="button" (click)="abrirCarrinho()">
+        🛒 Carrinho <span>{{ totalItens() }}</span>
+      </button>
+    </div>
+  </header>
+
+  <input
+    #inputFoto
+    type="file"
+    accept="image/*"
+    style="display:none"
+    (change)="onFotoSelecionada($event)"
+  >
+
+  <div class="popup-perfil" *ngIf="perfilAberto">
+    <div class="perfil-box">
+      <h2>Meu Perfil</h2>
+
+      <img class="avatar-preview" [src]="fotoUsuario" alt="Foto perfil">
+
+      <p class="nome-perfil">{{ usuario.nome || 'Cliente' }}</p>
+      <p class="pedidos-perfil">{{ usuario.pedidos || 0 }} pedidos realizados</p>
+      <p class="desconto-perfil">{{ textoDesconto }}</p>
+
+      <button type="button" class="btn-amarelo" (click)="inputFoto.click()">
+        Alterar Foto
+      </button>
+
+      <input
+        type="text"
+        placeholder="Salvar cartão opcional"
+        [(ngModel)]="usuario.cartao"
+      >
+
+      <button type="button" class="btn-amarelo" (click)="salvarPerfil()">
+        Salvar
+      </button>
+
+      <button type="button" class="btn-fechar-perfil" (click)="fecharPerfil()">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <main>
+    <input
+      class="search"
+      type="text"
+      placeholder="🔍 Buscar pratos..."
+      [(ngModel)]="busca"
+    >
+
+    <div class="categorias">
+      <button
+        type="button"
+        *ngFor="let categoria of categorias"
+        [class.ativo]="categoriaAtual === categoria.id"
+        (click)="selecionarCategoria(categoria.id)"
+      >
+        {{ categoria.nome }}
+      </button>
+    </div>
+
+    <section class="grid" *ngIf="pratosFiltrados.length > 0; else vazio">
+      <div class="card" *ngFor="let prato of pratosFiltrados">
+        <span class="badge" *ngIf="prato.badge">{{ prato.badge }}</span>
+
+        <img [src]="prato.img" [alt]="prato.nome">
+
+        <div class="info">
+          <h3>{{ prato.nome }}</h3>
+          <p>{{ prato.desc }}</p>
+
+          <div class="preco">
+            <div>
+              <span class="antigo" *ngIf="prato.antigo">
+                {{ moeda(prato.antigo) }}
+              </span>
+
+              <span class="valor">{{ moeda(prato.preco) }}</span>
+
+              <span class="desconto" *ngIf="prato.antigo">-15%</span>
+            </div>
+
+            <button
+              class="add"
+              type="button"
+              (click)="adicionarCarrinho(prato)"
+            >
+              +
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <ng-template #vazio>
+      <p class="vazio">Nenhum item encontrado.</p>
+    </ng-template>
+  </main>
+
+  <div class="carrinho-overlay ativo" *ngIf="carrinhoAberto">
+    <div class="carrinho-box">
+      <button class="fechar-modal" type="button" (click)="fecharCarrinho()">×</button>
+
+      <h2>🛒 Meu Carrinho</h2>
+      <small>Confira os itens antes de finalizar.</small>
+
+      <div *ngIf="carrinho.length > 0; else carrinhoVazio">
+        <div class="item-carrinho" *ngFor="let item of carrinho">
+          <div>
+            <strong>{{ item.prato.nome }}</strong>
+            <span>{{ moeda(item.prato.preco * item.quantidade) }}</span>
+          </div>
+
+          <div class="qtd-area">
+            <button type="button" (click)="diminuir(item)">−</button>
+            <strong>{{ item.quantidade }}</strong>
+            <button type="button" (click)="aumentar(item)">+</button>
+          </div>
+
+          <button type="button" (click)="removerItem(item.prato.id)">
+            Remover
+          </button>
+        </div>
+      </div>
+
+      <ng-template #carrinhoVazio>
+        <p class="vazio">Seu carrinho está vazio.</p>
+      </ng-template>
+
+      <div class="carrinho-total">
+        <strong>Total</strong>
+        <strong>{{ moeda(subtotal()) }}</strong>
+      </div>
+
+      <button class="finalizar-carrinho" type="button" (click)="abrirCheckout()">
+        Finalizar Pedido
+      </button>
+    </div>
+  </div>
+
+  <div class="checkout-overlay checkout ativo" *ngIf="checkoutAberto">
+    <div class="checkout-container">
+      <div class="checkout-top">
+        <div class="checkout-title">
+          <h1>Finalizar Pedido</h1>
+          <p>Complete as informações para confirmar seu pedido.</p>
+        </div>
+
+        <button class="voltar" type="button" (click)="fecharCheckout()">
+          ← Voltar
+        </button>
+      </div>
+
+      <div class="checkout-grid">
+        <div>
+          <div class="checkout-card">
+            <h3>1. Como deseja receber?</h3>
+
+            <div class="option-grid">
+              <label
+                class="option-card"
+                [class.ativo]="entregaTipo === 'Entrega'"
+              >
+                <input
+                  type="radio"
+                  name="entrega"
+                  value="Entrega"
+                  [(ngModel)]="entregaTipo"
+                >
+                <strong>Entrega</strong>
+                <small>Receba no endereço informado</small>
+              </label>
+
+              <label
+                class="option-card"
+                [class.ativo]="entregaTipo === 'Retirada no Local'"
+              >
+                <input
+                  type="radio"
+                  name="entrega"
+                  value="Retirada no Local"
+                  [(ngModel)]="entregaTipo"
+                >
+                <strong>Retirada no Local</strong>
+                <small>Retire seu pedido no restaurante</small>
+              </label>
+            </div>
+          </div>
+
+          <div class="checkout-card">
+            <h3>2. Seus Dados</h3>
+
+            <div class="checkout-fields">
+              <input
+                type="text"
+                placeholder="Nome completo *"
+                [(ngModel)]="dados.nome"
+              >
+
+              <input
+                type="text"
+                placeholder="Telefone / WhatsApp *"
+                [(ngModel)]="dados.telefone"
+              >
+
+              <textarea
+                placeholder="Observações: Ex: sem cebola, ponto da carne, alergia..."
+                [(ngModel)]="dados.observacao"
+              ></textarea>
+            </div>
+          </div>
+
+          <div class="checkout-card" *ngIf="entregaTipo === 'Entrega'">
+            <h3>3. Endereço de Entrega</h3>
+
+            <div class="checkout-fields">
+              <input
+                type="text"
+                placeholder="CEP *"
+                [(ngModel)]="dados.cep"
+                (input)="limitarCep($event)"
+                (blur)="buscarCEP()"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="8"
+              >
+              <span *ngIf="carregandoCEP" style="color: #FFD700; font-size: 12px;">⏳ Buscando...</span>
+              <span *ngIf="erroCEP" style="color: #FF6B6B; font-size: 12px;">❌ {{ erroCEP }}</span>
+
+              <input
+                type="text"
+                placeholder="Rua / Avenida *"
+                [(ngModel)]="dados.rua"
+                readonly
+              >
+
+              <input
+                type="text"
+                placeholder="Número *"
+                [(ngModel)]="dados.numero"
+                (input)="limitarNumero($event)"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                maxlength="11"
+              >
+
+              <input
+                type="text"
+                placeholder="Bairro *"
+                [(ngModel)]="dados.bairro"
+              >
+
+              <input
+                type="text"
+                placeholder="Complemento"
+                [(ngModel)]="dados.complemento"
+              >
+            </div>
+          </div>
+
+          <div class="checkout-card">
+            <h3>4. Forma de Pagamento</h3>
+
+            <div class="pagamento-grid">
+              <label class="pagamento-card" [class.ativo]="pagamento === 'Pix'">
+                <input type="radio" name="pagamento" value="Pix" [(ngModel)]="pagamento">
+                <strong>Pix</strong>
+                <small>Aprovação imediata</small>
+              </label>
+
+              <label class="pagamento-card" [class.ativo]="pagamento === 'Crédito'">
+                <input type="radio" name="pagamento" value="Crédito" [(ngModel)]="pagamento">
+                <strong>Crédito</strong>
+                <small>Cartão de crédito</small>
+              </label>
+
+              <label class="pagamento-card" [class.ativo]="pagamento === 'Débito'">
+                <input type="radio" name="pagamento" value="Débito" [(ngModel)]="pagamento">
+                <strong>Débito</strong>
+                <small>Cartão de débito</small>
+              </label>
+
+              <label class="pagamento-card" [class.ativo]="pagamento === 'Dinheiro'">
+                <input type="radio" name="pagamento" value="Dinheiro" [(ngModel)]="pagamento">
+                <strong>Dinheiro</strong>
+                <small>Pagar na entrega</small>
+              </label>
+            </div>
+
+            <div class="payment-extra" *ngIf="pagamento === 'Crédito' || pagamento === 'Débito'">
+              <h4>Dados do Cartão</h4>
+              <p>
+                Preencha os dados para conferência do pedido.
+                Para cobrança online real, depois precisa integrar Mercado Pago, InfinitePay ou Stripe.
+              </p>
+
+              <input
+                type="text"
+                placeholder="Nome no cartão"
+                [(ngModel)]="dados.nomeCartao"
+              >
+
+              <input
+                type="text"
+                placeholder="Número do cartão"
+                maxlength="19"
+                [(ngModel)]="dados.numeroCartao"
+              >
+
+              <div class="card-row">
+                <input
+                  type="text"
+                  placeholder="Validade MM/AA"
+                  maxlength="5"
+                  [(ngModel)]="dados.validadeCartao"
+                >
+
+                <input
+                  type="text"
+                  placeholder="CVV"
+                  maxlength="4"
+                  [(ngModel)]="dados.cvvCartao"
+                >
+              </div>
+            </div>
+
+            <div class="payment-extra" *ngIf="pagamento === 'Dinheiro'">
+              <h4>Troco</h4>
+
+              <label>Precisa de troco?</label>
+              <select [(ngModel)]="dados.precisaTroco">
+                <option value="Não">Não</option>
+                <option value="Sim">Sim</option>
+              </select>
+
+              <input
+                *ngIf="dados.precisaTroco === 'Sim'"
+                type="text"
+                placeholder="Troco para quanto? Ex: R$ 100,00"
+                [(ngModel)]="dados.trocoPara"
+              >
+            </div>
+
+            <div class="pix-info" *ngIf="pagamento === 'Pix'">
+              <strong>Pagamento via Pix</strong><br>
+              Após confirmar o pedido, você receberá a chave Pix no WhatsApp.
+              O pedido será preparado após a confirmação.
+            </div>
+          </div>
+        </div>
+
+        <aside>
+          <div class="resumo-card">
+            <h3>Resumo do Pedido</h3>
+
+            <div class="resumo-item" *ngFor="let item of carrinho">
+              <span>{{ item.quantidade }}x {{ item.prato.nome }}</span>
+              <strong>{{ moeda(item.prato.preco * item.quantidade) }}</strong>
+            </div>
+
+            <div class="linha-total">
+              <span>Subtotal</span>
+              <strong>{{ moeda(subtotal()) }}</strong>
+            </div>
+
+            <div class="linha-total">
+              <span>Taxa de Entrega</span>
+              <strong>{{ moeda(taxaEntrega()) }}</strong>
+            </div>
+
+            <div class="linha-total linha-final">
+              <span>Total</span>
+              <strong>{{ moeda(totalPedido()) }}</strong>
+            </div>
+
+            <button class="confirmar-pedido" type="button" (click)="finalizarPedido()">
+              Confirmar Pedido
+            </button>
+          </div>
+
+          <div class="confirmacao-card">
+            ✅ Confirmado<br>
+            Seus dados serão enviados para o WhatsApp do restaurante e o pedido irá para a cozinha.
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>

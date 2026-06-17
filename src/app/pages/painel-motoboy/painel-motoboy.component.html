@@ -1,0 +1,196 @@
+<section class="login-screen" *ngIf="!logado">
+  <div class="login-card">
+    <div class="login-icon">MB</div>
+    <div class="login-title">Entregador</div>
+    <div class="login-subtitle">Selecione seu perfil para entrar</div>
+
+    <button class="profile-option" type="button" *ngFor="let perfil of perfis" (click)="entrar(perfil)">
+      <span class="profile-left">
+        <span class="profile-avatar" [style.background]="perfil.cor || '#555'">{{ perfil.avatar }}</span>
+        <span>
+          <strong class="profile-name">{{ perfil.nome }}</strong>
+          <small class="profile-meta">{{ perfil.rating }} estrelas - {{ perfil.entregas }} entregas</small>
+        </span>
+      </span>
+      <span class="profile-arrow">›</span>
+    </button>
+
+    <button class="btn-voltar" type="button" (click)="voltarCardapio()">Voltar ao Cardapio</button>
+  </div>
+</section>
+
+<section class="painel ativo" *ngIf="logado">
+  <header class="header">
+    <div class="header-left">
+      <div class="header-avatar">{{ perfilSelecionado?.avatar }}</div>
+      <div class="header-info">
+        <div class="header-name">Ola, {{ perfilSelecionado?.nome?.split(' ')?.[0] }}!</div>
+        <div class="header-rating">{{ perfilSelecionado?.rating }} estrelas - {{ perfilSelecionado?.entregas }} entregas</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <button class="btn-sair" type="button" (click)="sair()">Sair</button>
+      <div class="toggle-wrap">
+        <span class="status-dot" [class.online]="online" [class.offline]="!online"></span>
+        <label class="toggle">
+          <input type="checkbox" [checked]="online" (change)="setOnline($any($event.target).checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats-bar">
+    <div class="stat-item">
+      <div class="stat-value">{{ dinheiro(ganhos) }}</div>
+      <div class="stat-label">Hoje</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-value">{{ entregasHoje }}</div>
+      <div class="stat-label">Entregas</div>
+    </div>
+    <div class="stat-item">
+      <button class="stat-gps" type="button" [class.off]="gpsStatus !== 'GPS Ativo'" (click)="ativarGPS()">
+        {{ gpsStatus === 'GPS Ativo' ? 'GPS Ativo' : 'GPS Ativar' }}
+      </button>
+      <div class="stat-label">Localizacao</div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="tab" type="button" [class.ativo]="abaAtiva === 'disponiveis'" (click)="mudarAba('disponiveis')">
+      Disponiveis ({{ pedidosDisponiveis.length }})
+    </button>
+    <button class="tab" type="button" [class.ativo]="abaAtiva === 'rastreador'" (click)="mudarAba('rastreador')">Rastreador</button>
+    <button class="tab" type="button" [class.ativo]="abaAtiva === 'ativas'" (click)="mudarAba('ativas')">
+      Ativas ({{ entregaAtiva ? 1 : 0 }})
+    </button>
+    <button class="tab" type="button" [class.ativo]="abaAtiva === 'historico'" (click)="mudarAba('historico')">Historico</button>
+  </nav>
+
+  <main class="conteudo">
+    <ng-container *ngIf="abaAtiva === 'disponiveis'">
+      <div class="offline-banner" *ngIf="!online">
+        <div class="icon">!</div>
+        <div>
+          <div class="offline-title">Voce esta offline</div>
+          <div class="offline-sub">Ative o status para receber pedidos e aparecer no rastreador</div>
+        </div>
+      </div>
+
+      <section class="secao">
+        <div class="secao-header"><span class="fire">!</span> ALTA PRIORIDADE</div>
+
+        <article class="card-pedido" *ngFor="let pedido of pedidosDisponiveis">
+          <div class="card-top">
+            <div>
+              <div class="pedido-nome">{{ pedido.cliente }}</div>
+              <div class="pedido-num">Pedido #{{ pedido.id }}</div>
+            </div>
+            <div class="pedido-meta">
+              <div class="pedido-preco">{{ dinheiro(pedido.preco) }}</div>
+              <div class="pedido-dist">{{ pedido.distancia }} - {{ pedido.tempo }}</div>
+            </div>
+          </div>
+
+          <div class="rota-item">
+            <div class="rota-dot origem"></div>
+            <div>
+              <div class="rota-label">Retirar em</div>
+              <div class="rota-end">{{ pedido.retirada }}</div>
+            </div>
+          </div>
+
+          <div class="rota-item">
+            <div class="rota-dot destino"></div>
+            <div>
+              <div class="rota-label">Entregar em</div>
+              <div class="rota-end">{{ pedido.entrega }}</div>
+            </div>
+          </div>
+
+          <div class="card-btns">
+            <button class="btn-map" type="button" (click)="abrirMaps(pedido.lat, pedido.lng)">Maps</button>
+            <button class="btn-waze" type="button" (click)="abrirWaze(pedido.lat, pedido.lng)">Waze</button>
+          </div>
+
+          <div class="card-btns-3">
+            <button class="btn-rota" type="button" (click)="verRota(pedido)">Ver Rota</button>
+            <button class="btn-recusar" type="button" (click)="recusarPedido(pedido)">X</button>
+            <button class="btn-aceitar" type="button" (click)="aceitarPedido(pedido)">Aceitar</button>
+          </div>
+        </article>
+
+        <div class="empty" *ngIf="!pedidosDisponiveis.length">
+          <div class="empty-icon">OK</div>
+          <div class="empty-text">Nenhum pedido disponivel no momento</div>
+        </div>
+      </section>
+    </ng-container>
+
+    <ng-container *ngIf="abaAtiva === 'rastreador'">
+      <section class="loc-card">
+        <div class="loc-title">Sua Localizacao em Tempo Real</div>
+        <div class="loc-info">
+          <div><b>Status:</b> <span>{{ gpsStatus }}</span></div>
+          <div><b>Coordenadas:</b> <span class="loc-coords">{{ gpsCoords }}</span></div>
+          <div><b>Precisao:</b> <span>{{ gpsPrecisao }}</span></div>
+          <div><b>Ultima atualizacao:</b> <span>{{ gpsHora }}</span></div>
+        </div>
+        <div class="loc-map">
+          <div class="loc-map-grid"></div>
+          <div class="loc-circle"></div>
+          <div class="loc-pin">MB</div>
+        </div>
+        <div class="loc-status">{{ locStatus }}</div>
+      </section>
+      <div class="gps-actions">
+        <button type="button" (click)="ativarGPS()">Ativar / Atualizar GPS</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="abaAtiva === 'ativas'">
+      <section class="active-wrap" *ngIf="entregaAtiva; else semEntregaAtiva">
+        <article class="card-pedido">
+          <div class="ativo-badge">{{ entregaAtiva.status }}</div>
+          <div class="card-top">
+            <div>
+              <div class="pedido-nome">{{ entregaAtiva.cliente }}</div>
+              <div class="pedido-num">Em entrega</div>
+            </div>
+            <div class="pedido-preco">{{ dinheiro(entregaAtiva.preco) }}</div>
+          </div>
+          <div class="rota-item">
+            <div class="rota-dot destino"></div>
+            <div>
+              <div class="rota-label">Indo para</div>
+              <div class="rota-end">{{ entregaAtiva.entrega }}</div>
+            </div>
+          </div>
+          <button class="btn-entregar" type="button" (click)="finalizarEntrega()">Confirmar Entrega</button>
+        </article>
+      </section>
+
+      <ng-template #semEntregaAtiva>
+        <div class="empty">
+          <div class="empty-icon">MB</div>
+          <div class="empty-text">Nenhuma entrega ativa no momento</div>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <ng-container *ngIf="abaAtiva === 'historico'">
+      <section class="historico">
+        <article class="hist-item" *ngFor="let item of historico">
+          <div>
+            <div class="hist-nome">{{ item.cliente }}</div>
+            <div class="hist-data">{{ item.data }}</div>
+          </div>
+          <div class="hist-preco">{{ dinheiro(item.preco) }}</div>
+        </article>
+      </section>
+    </ng-container>
+  </main>
+</section>
+
+<div class="toast" [class.show]="toastVisible">{{ toastMessage }}</div>

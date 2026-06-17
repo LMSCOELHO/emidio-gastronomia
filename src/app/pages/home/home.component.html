@@ -1,0 +1,187 @@
+<header class="header">
+  <div class="container nav">
+    <div class="logo">
+      <h1>Emídio Gastronomia</h1>
+      <span>RESTAURANTE & DELIVERY</span>
+    </div>
+    <nav class="menu">
+      <a routerLink="/inicio" routerLinkActive="active">Início</a>
+      <a routerLink="/cardapio" routerLinkActive="active">Cardápio</a>
+      <a routerLink="/localizacao">Localização</a>
+      <a href="https://wa.me/5511977418601" target="_blank">Pedidos</a>
+      <a routerLink="/login" class="btn-login">Entrar</a>
+      <a routerLink="/cadastro" class="btn-create">Criar Conta</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero" id="inicio">
+  <div class="container hero-content">
+    <p class="tag">ALTA GASTRONOMIA BRASILEIRA</p>
+    <h2>Uma experiência<br><span>inesquecível</span></h2>
+    <p class="hero-text">
+      Pratos elaborados com ingredientes selecionados,<br>
+      técnicas refinadas e a alma da culinária brasileira.
+    </p>
+    <span class="closed">● Fechado</span><br>
+   <a routerLink="/cardapio" class="main-btn">🛒 Ver Cardápio</a>
+    <a routerLink="/localizacao" class="location-btn">📍 Localização</a>
+  </div>
+</section>
+
+<div class="container">
+
+  <section class="section reveal" id="cardapio">
+    <div class="title-line">
+      <span></span>
+      <h3>PRATO DO DIA</h3>
+      <span></span>
+    </div>
+    <div class="dish">
+      <div class="dish-img">
+        <span class="discount">-14% OFF</span>
+      </div>
+      <div class="dish-info">
+        <h2>Costela na Brasa</h2>
+        <p>Costela bovina assada lentamente na brasa, acompanha arroz, feijão, mandioca e vinagrete artesanal da casa.</p>
+        <span class="old-price">R$ 65,00</span>
+        <span class="price">R$ 55,90</span><br>
+        <a href="https://wa.me/5511977418601" target="_blank" class="main-btn">🛒 Pedir Agora</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal">
+    <div class="title-line">
+      <span></span>
+      <h3>NOSSOS DESTAQUES</h3>
+      <span></span>
+    </div>
+    <div class="cards">
+      <div class="card" style="background-image:url('https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=800&q=80')">
+        <div class="card-text">
+          <h3>Pratos Tradicionais</h3>
+          <p>Feijoada, Moqueca, Picanha e mais</p>
+          <button (click)="irParaCardapio()">Ver Mais</button>
+        </div>
+      </div>
+      <div class="card" style="background-image:url('https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80')">
+        <div class="card-text">
+          <h3>Bebidas & Coquetéis</h3>
+          <p>Caipirinhas, vinhos e drinques</p>
+          <button (click)="irParaCardapio()">Ver Mais</button>
+        </div>
+      </div>
+      <div class="card" style="background-image:url('https://images.unsplash.com/photo-1514517604298-cf80e0fb7f1e?auto=format&fit=crop&w=800&q=80')">
+        <div class="card-text">
+          <h3>Sobremesas</h3>
+          <p>Brigadeiros, pudim e sobremesas finas</p>
+          <button (click)="irParaCardapio()">Ver Mais</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section reveal" id="avaliacoes">
+    <div class="title-line">
+      <span></span>
+      <h3>AVALIAÇÕES DOS CLIENTES</h3>
+      <span></span>
+    </div>
+    <div class="reviews">
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/women/44.jpg">
+        <h3>Maria Silva</h3>
+        <small>Pedido e Entrega</small>
+        <p class="stars">★★★★★</p>
+        <p>"Comida perfeita, chegou quente e muito bem embalada. A feijoada estava sensacional."</p>
+      </div>
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg">
+        <h3>Carlos Eduardo</h3>
+        <small>Delivery Premium</small>
+        <p class="stars">★★★★★</p>
+        <p>"Atendimento excelente e a costela estava incrível. Recomendo muito."</p>
+      </div>
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/women/68.jpg">
+        <h3>Juliana Costa</h3>
+        <small>Combo Completo</small>
+        <p class="stars">★★★★★</p>
+        <p>"Sobremesa maravilhosa. Pedi uma vez e já virei cliente."</p>
+      </div>
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/men/71.jpg">
+        <h3>Roberto Almeida</h3>
+        <small>Tradicional</small>
+        <p class="stars">★★★★★</p>
+        <p>"Entrega rápida, comida bem feita e tempero muito bom."</p>
+      </div>
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/women/22.jpg">
+        <h3>Ana Beatriz</h3>
+        <small>Almoço Executivo</small>
+        <p class="stars">★★★★★</p>
+        <p>"Feijoada sensacional, porção boa e sabor bem brasileiro."</p>
+      </div>
+      <div class="review">
+        <img src="https://randomuser.me/api/portraits/men/15.jpg">
+        <h3>Lucas Martins</h3>
+        <small>Pedido Online</small>
+        <p class="stars">★★★★★</p>
+        <p>"Site fácil de usar, atendimento rápido e pedido chegou antes do prazo."</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="stats reveal">
+    <div><strong>⭐ 4.9</strong><br>Média Geral</div>
+    <div><strong>1247</strong><br>Avaliações</div>
+    <div><strong class="green">98%</strong><br>Entregas no Prazo</div>
+    <div><strong>95%</strong><br>Recomendariam</div>
+  </section>
+
+</div>
+
+<section class="cta">
+  <p>RESERVE SUA EXPERIÊNCIA</p>
+  <h2>Pronto para fazer seu pedido?</h2>
+  <span>Delivery rápido ou retirada no local. Qualidade garantida.</span><br>
+  <a href="https://wa.me/5511977418601" target="_blank" class="main-btn">🛒 Fazer Pedido</a>
+  <a routerLink="/localizacao" class="location-btn">📍 Localização</a>
+</section>
+
+<footer class="footer" id="contato">
+  <div class="container footer-grid">
+    <div>
+      <h3>Emídio Gastronomia</h3>
+      <p>Alta culinária brasileira com amor e qualidade em cada prato.</p>
+    </div>
+    <div>
+      <h3>Links</h3>
+      <a href="#inicio">Início</a>
+      <a routerLink="/cardapio">Cardápio</a>
+      <a href="#avaliacoes">Avaliações</a>
+      <a href="https://wa.me/5511977418601" target="_blank">Pedidos</a>
+    </div>
+    <div>
+      <h3>Contato</h3>
+      <p>📍 UNASP SP — Capão Redondo</p>
+      <p>📞 (11) 97741-8601</p>
+      <p>🕒 Seg-Sex 11h–00h | Sáb-Dom 11h–23h30</p>
+    </div>
+    <div>
+      <h3>Redes</h3>
+      <div class="socials">
+        <a href="https://www.instagram.com/saborbrasileiroresto/" target="_blank">
+          <button>📷</button>
+        </a>
+        <a href="https://wa.me/5511977418601" target="_blank">
+          <button>💬</button>
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<a class="float-location" routerLink="/localizacao">📍</a>

@@ -1,0 +1,13 @@
+<div class="perfil-area">
+  <div class="perfil-card">
+    <img [src]="fotoPerfil" alt="Foto de perfil">
+    <input type="file" id="uploadFoto" accept="image/*" (change)="onFileChange($event)">
+    <h2>{{ nomeCliente }}</h2>
+    <p>🍔 Pedidos: {{ totalPedidos }}</p>
+    <p>{{ desconto }}</p>
+    <input type="text" [(ngModel)]="enderecoSalvo" placeholder="Salvar endereço" name="endereco">
+    <input type="text" [(ngModel)]="cartaoSalvo" placeholder="Salvar cartão (opcional)" name="cartao">
+    <button type="button" (click)="salvarPerfil()">Salvar Perfil</button>
+    <button type="button" (click)="finalizarPedido()">Finalizar Pedido</button>
+  </div>
+</div>

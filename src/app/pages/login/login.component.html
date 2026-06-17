@@ -1,0 +1,36 @@
+<div class="area-login">
+  <div class="logo">
+    <div class="icone">🍴</div>
+    <h1>EMÍDIO</h1>
+    <span>GASTRONOMIA</span>
+  </div>
+
+  <div class="card">
+    <h2>Entrar na Conta</h2>
+    <p>Digite suas credenciais para acessar</p>
+
+    <div>
+      <label>E-mail</label>
+      <div class="campo">
+        <i>✉</i>
+        <input type="email" [(ngModel)]="email" placeholder="seu@email.com" name="email">
+      </div>
+
+      <label>Senha</label>
+      <div class="campo">
+        <i>🔒</i>
+        <input type="password" [(ngModel)]="senha" placeholder="••••••••" name="senha">
+      </div>
+
+      <button type="button" (click)="fazerLogin()">Entrar</button>
+
+      <div class="erro" *ngIf="erro">{{ erro }}</div>
+    </div>
+
+    <div class="links">
+      <a routerLink="/cadastro">Não tem conta? Criar conta</a>
+      <a href="#" (click)="recuperarSenha(); $event.preventDefault()">Esqueci minha senha</a>
+      <a href="#" (click)="voltar(); $event.preventDefault()">← Voltar para o site</a>
+    </div>
+  </div>
+</div>

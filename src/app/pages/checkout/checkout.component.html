@@ -1,0 +1,184 @@
+<div class="checkout">
+
+  <div class="topo">
+    <div class="titulo">
+      <div class="icone-topo">🛍</div>
+      <div>
+        <h1>Finalizar Pedido</h1>
+        <p>Complete as informações para continuar</p>
+      </div>
+    </div>
+    <button class="voltar" (click)="voltar()">‹ Voltar</button>
+  </div>
+
+  <div class="layout">
+    <main>
+
+      <section class="card-box">
+        <div class="box-title">
+          <span class="numero-etapa">1</span>
+          <span>👤</span>
+          <span>Seus Dados</span>
+        </div>
+        <div class="form-grid">
+          <div class="campo">
+            <label>Nome Completo <span class="required">*</span></label>
+            <div class="input-icon">
+              <span class="icon">♡</span>
+              <input type="text" placeholder="Seu nome completo">
+            </div>
+          </div>
+          <div class="campo">
+            <label>Telefone / WhatsApp <span class="required">*</span></label>
+            <div class="input-icon">
+              <span class="icon">☎</span>
+              <input type="text" placeholder="(11) 99999-9999">
+            </div>
+          </div>
+          <div class="campo full">
+            <label>Observações (opcional)</label>
+            <div class="input-icon">
+              <span class="icon">☰</span>
+              <textarea placeholder="Alguma observação?"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-box address-area">
+        <div class="box-title">
+          <span class="numero-etapa">2</span>
+          <span>📍</span>
+          <span>Endereço de Entrega</span>
+        </div>
+        <div class="linha-desenhada"></div>
+        <div class="linha-desenhada-2"></div>
+        <div class="address-grid">
+          <div class="campo">
+            <label>Rua / Avenida <span class="required">*</span></label>
+            <div class="input-icon">
+              <span class="icon">⌖</span>
+              <input type="text" placeholder="Nome da rua">
+            </div>
+          </div>
+          <div class="campo">
+            <label>Número <span class="required">*</span></label>
+            <div class="input-icon">
+              <span class="icon">▣</span>
+              <input type="text" placeholder="123">
+            </div>
+          </div>
+          <div class="campo">
+            <label>Bairro <span class="required">*</span></label>
+            <div class="input-icon">
+              <span class="icon">▥</span>
+              <input type="text" placeholder="Seu bairro">
+            </div>
+          </div>
+          <div class="campo">
+            <label>Complemento</label>
+            <div class="input-icon">
+              <span class="icon">⌂</span>
+              <input type="text" placeholder="Apto, bloco...">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-box">
+        <div class="box-title">
+          <span class="numero-etapa">3</span>
+          <span>💳</span>
+          <span>Forma de Pagamento</span>
+        </div>
+        <div class="payment-grid">
+          <div class="payment-card" [class.active]="pagamentoSelecionado === 'PIX'" (click)="selecionarPagamento('PIX')">
+            <div class="payment-icon">❖</div>
+            <div>
+              <strong>PIX</strong>
+              <span>Aprovação imediata</span>
+            </div>
+            <div class="check">✓</div>
+          </div>
+          <div class="payment-card" [class.active]="pagamentoSelecionado === 'Crédito'" (click)="selecionarPagamento('Crédito')">
+            <div class="payment-icon">▭</div>
+            <div>
+              <strong>Crédito</strong>
+              <span>Cartão de crédito</span>
+            </div>
+            <div class="check">✓</div>
+          </div>
+          <div class="payment-card" [class.active]="pagamentoSelecionado === 'Débito'" (click)="selecionarPagamento('Débito')">
+            <div class="payment-icon">▣</div>
+            <div>
+              <strong>Débito</strong>
+              <span>Cartão de débito</span>
+            </div>
+            <div class="check">✓</div>
+          </div>
+          <div class="payment-card" [class.active]="pagamentoSelecionado === 'Dinheiro'" (click)="selecionarPagamento('Dinheiro')">
+            <div class="payment-icon">▤</div>
+            <div>
+              <strong>Dinheiro</strong>
+              <span>Pagar na entrega</span>
+            </div>
+            <div class="check">✓</div>
+          </div>
+        </div>
+
+        @if (pagamentoSelecionado === 'PIX') {
+          <div class="pix-box">
+            <strong>❖ Pagamento via PIX</strong>
+            <p>Após confirmar o pedido, será exibido um QR Code para pagamento. O pedido será aprovado automaticamente após a confirmação.</p>
+            <strong>⚡ Aprovação imediata</strong>
+          </div>
+        }
+      </section>
+
+    </main>
+
+    <aside class="resumo">
+      <h2>Resumo do Pedido</h2>
+      <small>0 item no pedido</small>
+
+      <div class="divisor"></div>
+
+      <div class="empty">
+        <div>
+          <div class="empty-icon">🛍</div>
+          <strong>Seu pedido está vazio</strong>
+          <span>Adicione itens no cardápio<br>para continuar</span>
+        </div>
+      </div>
+
+      <div class="divisor"></div>
+
+      <div class="resumo-linha">
+        <span>Subtotal</span>
+        <strong>R$ 0,00</strong>
+      </div>
+      <div class="resumo-linha">
+        <span>Taxa de Entrega</span>
+        <strong class="entrega">R$ 0,00</strong>
+      </div>
+      <div class="divisor"></div>
+      <div class="resumo-linha total">
+        <span>Total</span>
+        <span>R$ 0,00</span>
+      </div>
+
+      <div class="select-fake">
+        <span>💠 Pagamento</span>
+        <strong>{{ pagamentoSelecionado }}</strong>
+      </div>
+      <div class="select-fake">
+        <span>📦 Tipo</span>
+        <strong>Entrega (Delivery)</strong>
+      </div>
+
+      <button class="btn" (click)="finalizarPedido()">✓ Confirmar Pedido</button>
+
+      <div class="termos">Ao confirmar, você aceita os termos para o pedido. 🔒</div>
+    </aside>
+  </div>
+</div>
